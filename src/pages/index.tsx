@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ExampleReqType, ExampleResType } from "./api/example";
 import axios from "axios";
 import { EndPoint } from "~/constants/EndPoints";
-import { Button } from "@chakra-ui/react";
+import { Button, Container } from "@chakra-ui/react";
 
 const Home: NextPage = () =>
 {
