@@ -22,25 +22,35 @@ import {
   Box,
   IconButton,
   WrapItem,
+  Center
 } from "@chakra-ui/react";
+import Recipe from "~/components/auth/Recipe";
 
 const profile = () => {
   const router = useRouter();
   const name = router.query.name as string;
-  const data = ["munad", "piim", "leib", "vorst", "juust"];
+  // const data = ["munad", "piim", "leib", "vorst", "juust"];
   return (
-    <Container>
+    <Container maxW='2xl' centerContent>
       <Grid
-        h="200px"
+        w="1200px"
         templateRows="repeat(2, 1fr)"
         templateColumns="repeat(5, 1fr)"
         gap={4}
       >
-        <GridItem colSpan={3}>
-          <UnorderedList>
+        <GridItem colSpan={4}>
+          <Heading><Center>{name}&rsquo;s recipes</Center></Heading>
+          {/* <UnorderedList>
             {data.map((item, index) => {
               return <ListItem key={index}>{item}</ListItem>;
             })}
+          </UnorderedList> */}
+          <UnorderedList mt="6">            
+          <Recipe name="Test" horizontal guidelines="Testing guidlines" info="Info jeje" />          
+          <Recipe name="Test" horizontal guidelines="Testing guidlines" info="Info jeje" />
+          <Recipe name="Test" horizontal guidelines="Testing guidlines" info="Info jeje" />
+          <Recipe name="Test" horizontal guidelines="Testing guidlines" info="Info jeje" />
+          <Recipe name="Test" horizontal guidelines="Testing guidlines" info="Info jeje" />
           </UnorderedList>
         </GridItem>
 
@@ -50,7 +60,7 @@ const profile = () => {
               <Stack mt="6" spacing="3">
                 <Heading>
                   <Flex spacing="4">
-                    <Flex flex="1" gap="4" alignItems="center" flexWrap="wrap">
+                    <Flex flex="1" gap="3" alignItems="center" flexWrap="wrap">
                       <Avatar
                         name={name}
                         src="https://www.recipefy.com/media/W1siZiIsIjIwMTQvMTEvMjUvMTVfMzhfNTFfODQzX21pbmEwMDA3X2pwZy5qcGciXSxbInAiLCJhdXRvX29yaWVudCJdLFsicCIsInRodW1iIiwiMTYweDE2MCMiXSxbImUiLCJqcGciXV0/mina0007-jpg.jpg"
@@ -58,12 +68,7 @@ const profile = () => {
                       <Box>
                         <Heading size="sm">{name}</Heading>
                       </Box>
-                    </Flex>
-                    <IconButton
-                      variant="ghost"
-                      colorScheme="gray"
-                      aria-label="See menu"
-                    />
+                    </Flex>                    
                   </Flex>
                 </Heading>
                 <Text>
@@ -72,7 +77,7 @@ const profile = () => {
                 </Text>
               </Stack>
             </CardBody>
-            <Divider />
+            <Center>
             <CardFooter>
               <ButtonGroup spacing="2">
                 <Stack>
@@ -85,6 +90,7 @@ const profile = () => {
                 </Stack>
               </ButtonGroup>
             </CardFooter>
+            </Center>
           </Card>
         </GridItem>
       </Grid>
