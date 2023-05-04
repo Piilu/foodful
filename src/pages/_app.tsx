@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import { ChakraProvider } from '@chakra-ui/react'
 
 import "~/styles/globals.css";
+import NavBar from "~/components/custom/NavBar";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -13,6 +14,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
   return (
     <SessionProvider session={session}>
       <ChakraProvider>
+        <NavBar />
         <Component {...pageProps} />
       </ChakraProvider>
     </SessionProvider>

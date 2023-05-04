@@ -1,24 +1,26 @@
 import React, { FunctionComponent } from 'react'
 import { Brands } from '~/constants/types';
-import {
-    Box,
-    Button,
-    ButtonGroup,
-    Container,
-    Flex,
-    HStack,
-    IconButton,
-    useBreakpointValue,
-  } from '@chakra-ui/react'
-
-function NavBar () {
-    const isDesktop = useBreakpointValue({ base: false, lg: true })
+import
+{
+  Box,
+  Button,
+  ButtonGroup,
+  Container,
+  Flex,
+  HStack,
+  IconButton,
+  useBreakpointValue,
+} from '@chakra-ui/react'
+const NavBar = () =>
+{
+  const isDesktop = useBreakpointValue({ base: false, lg: true })
   return (
-    <Box as="section" pb={{ base: '12', md: '24' }}>
+    <Box as="section">
       <Box as="nav" bg="bg-surface" boxShadow="sm">
         <Container py={{ base: '4', lg: '5' }}>
           <HStack spacing="10" justify="space-between">
-           
+            <h2>LOGO</h2>
+
             {isDesktop ? (
               <Flex justify="space-between" flex="1">
                 <ButtonGroup variant="link" spacing="8">
@@ -34,7 +36,6 @@ function NavBar () {
             ) : (
               <IconButton
                 variant="ghost"
-                
                 aria-label="Open Menu"
               />
             )}
@@ -45,6 +46,4 @@ function NavBar () {
   )
 }
 
-function useBreakpointValue(arg0: { base: boolean; lg: boolean; }) {
-    throw new Error('Function not implemented.');
-}
+export default NavBar;
