@@ -1,17 +1,17 @@
 import { Card, Container, CardHeader, Box, Heading, Text, Image, CardBody, CardFooter, Button, Stack, StackDivider } from '@chakra-ui/react';
 import React from 'react'
 
-export const recipe  = () => {
+export const recipe = () =>
+{
   return (
-    <Container>
-      <Card>
+    <Card>
       <Image
-          objectFit='cover'
-          src='https://images.pexels.com/photos/6287527/pexels-photo-6287527.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
-          alt='Chakra UI'
-        />
+        objectFit='cover'
+        src='https://images.pexels.com/photos/6287527/pexels-photo-6287527.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+        alt='Chakra UI'
+      />
 
-        <CardBody>
+      <CardBody>
         <Card>
           <CardHeader>
             <Heading size='md'>Pasta Bolognese</Heading>
@@ -46,23 +46,22 @@ export const recipe  = () => {
             </Stack>
           </CardBody>
         </Card>
-        </CardBody>
-        
-        <CardFooter
-          justify='space-between'
-          flexWrap='wrap'
-          sx={{
-            '& > button': {
-              minW: '136px',
-            },
-          }}
-        >
-          <Button flex='1' variant='ghost'>
-            Like
-          </Button>
-        </CardFooter>
-      </Card>
-    </Container>
+      </CardBody>
+
+      <CardFooter
+        justify='space-between'
+        flexWrap='wrap'
+        sx={{
+          '& > button': {
+            minW: '136px',
+          },
+        }}
+      >
+        <Button flex='1' variant='ghost'>
+          Like
+        </Button>
+      </CardFooter>
+    </Card>
   )
 }
 

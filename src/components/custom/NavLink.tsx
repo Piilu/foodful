@@ -1,8 +1,20 @@
 import { Link, useColorModeValue } from '@chakra-ui/react'
-import React, { ReactNode } from 'react'
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
+import React, { FunctionComponent, ReactNode } from 'react'
+import { LinkType } from '~/constants/types';
 
-const NavLink = ({ children }: { children: ReactNode }) =>
+type NavLinkType = {
+    item: LinkType;
+}
+const NavLink: FunctionComponent<NavLinkType> = (props) =>
 {
+    const { data: session } = useSession();
+    const { item } = props;
+    const router = useRouter();
+    const activeColor = useColorModeValue('gray.200', 'gray.700');
+    const link = item.isProfile ? `/${session?.user.name as string}` : item.link;
+
     return (
         <Link
             px={2}
@@ -10,10 +22,11 @@ const NavLink = ({ children }: { children: ReactNode }) =>
             rounded={'md'}
             _hover={{
                 textDecoration: 'none',
-                bg: useColorModeValue('gray.200', 'gray.700'),
+                bg: activeColor,
             }}
-            href={'#'}>
-            {children}
+            bg={router.asPath.toLocaleLowerCase() === link.toLocaleLowerCase() ? activeColor : null}
+            href={link}>
+            {item.label}
         </Link>
     )
 }

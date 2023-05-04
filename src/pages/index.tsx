@@ -1,45 +1,54 @@
 import styles from "./index.module.css";
-import { type NextPage } from "next";
+import { GetServerSidePropsContext, type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { ExampleReqType, ExampleResType } from "./api/example";
 import axios from "axios";
 import { EndPoint } from "~/constants/EndPoints";
-import { Button, Container } from "@chakra-ui/react";
+import { Box, Button, Container, Flex, Input, InputGroup, InputLeftElement, Text } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
+import { authOptions, getServerAuthSession } from "~/server/auth";
+import { requireAuth } from "~/utils/helpers";
+import Recipe from "~/components/auth/Recipe";
+import { Group, MediaQuery } from "@mantine/core"
+import { IconSearch } from "@tabler/icons-react"
+
+export async function getServerSideProps(ctx: GetServerSidePropsContext)
+{
+  const session = await getServerAuthSession(ctx)
+  return await requireAuth(ctx);
+}
 
 const Home: NextPage = () =>
 {
   const { data: session } = useSession();
-
-  const exampleBackend = async () =>
-  {
-    const data: ExampleReqType = {
-      name: "Test"
-    }
-    await axios.post(`${window.origin}${EndPoint.EXAMPLE}`).then(res =>
-    {
-      const newData = res.data as ExampleResType;
-      if (newData.success)
-      {
-        alert("Success")
-      }
-      else
-      {
-        alert("Failed")
-      }
-    }).catch(err =>
-    {
-      alert("Failed server error")
-    })
-  }
-
   return (
-    <div>
-      <Button onClick={exampleBackend}>test</Button>
+    <>
+      {/* See saab eraldi komponent olla */}
+      <Text align="center" pb={5} fontSize="4xl" > Todays hot recipes</Text>
+      <Group style={{ justifyContent: "center" }}>
+        <Recipe name="Test" guidelines="Testing guidlines" info="Info jeje" />
+        <Recipe name="Test" guidelines="Testing guidlines" info="Info jeje" />
+        <Recipe name="Test" guidelines="Testing guidlines" info="Info jeje" />
+      </Group>
 
-      <p>Current user: {session?.user.name}</p>
-    </div>
+      {/* See saab eraldi komponent olla */}
+      <Box style={{ padding: "1em" }}>
+        <Text align="center" pb={5} fontSize="4xl" >Search for recipes</Text>
+        <InputGroup mb={5}>
+          <InputLeftElement
+            pointerEvents='none'
+            children={<IconSearch />}
+          />
+          <Input type='text' placeholder='Search by name' />
+        </InputGroup>
+        <Recipe name="Test" horizontal guidelines="Testing guidlines" info="Info jeje" />
+        <Recipe name="Test" horizontal guidelines="Testing guidlines" info="Info jeje" />
+        <Recipe name="Test" horizontal guidelines="Testing guidlines" info="Info jeje" />
+        <Recipe name="Test" horizontal guidelines="Testing guidlines" info="Info jeje" />
+      </Box>
+
+    </>
   );
 };
 

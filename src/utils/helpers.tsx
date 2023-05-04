@@ -1,9 +1,12 @@
-import { GetServerSidePropsContext, PreviewData } from "next";
-import { ParsedUrlQuery } from "querystring";
+import { GetServerSidePropsContext } from "next";
 import { getServerAuthSession } from "~/server/auth";
 
-export const requireAuth = async (ctx: GetServerSidePropsContext<ParsedUrlQuery, PreviewData>, cb: any) =>
+export const requireAuth = async (ctx: GetServerSidePropsContext) =>
 {
     const session = await getServerAuthSession(ctx);
-    return cb({ session });
+    return {
+        props: {
+            session: session,
+        },
+    }
 }

@@ -16,7 +16,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
     <SessionProvider session={session}>
       <ChakraProvider>
         <NavBar />
-        <Container style={{border:"solid 1px red"}}>
+        <Container>
           <Component {...pageProps} />
         </Container>
       </ChakraProvider>
