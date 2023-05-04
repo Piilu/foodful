@@ -5,6 +5,7 @@ import { ChakraProvider } from '@chakra-ui/react'
 
 import "~/styles/globals.css";
 import NavBar from "~/components/custom/NavBar";
+import { Container } from "@mantine/core";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -15,7 +16,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
     <SessionProvider session={session}>
       <ChakraProvider>
         <NavBar />
-        <Component {...pageProps} />
+        <Container style={{border:"solid 1px red"}}>
+          <Component {...pageProps} />
+        </Container>
       </ChakraProvider>
     </SessionProvider>
   );
