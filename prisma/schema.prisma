@@ -48,13 +48,46 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
+    id            String      @id @default(cuid())
     name          String?
-    email         String?   @unique
+    email         String?     @unique
     emailVerified DateTime?
     image         String?
     accounts      Account[]
     sessions      Session[]
+    Recipe        Recipe[]
+    Favorites     Favorites[]
+}
+
+model Recipe {
+    id          Int           @id @default(autoincrement())
+    name        String
+    description String?       @db.Text
+    userId      String
+    user        User          @relation(fields: [userId], references: [id])
+    totalTime   Int?
+    createdAt   DateTime      @default(now())
+    updatedAt   DateTime      @updatedAt
+    ingredients ingredients[]
+    Favorites   Favorites[]
+}
+
+model ingredients {
+    id          Int     @id @default(autoincrement())
+    name        String
+    amount      String
+    description String? @db.Text
+    recipeId    Int
+    recipe      Recipe  @relation(fields: [recipeId], references: [id])
+    priority    Int
+}
+
+model Favorites {
+    id       Int    @id @default(autoincrement())
+    recipeId Int
+    recipe   Recipe @relation(fields: [recipeId], references: [id])
+    userId   String
+    user     User   @relation(fields: [userId], references: [id])
 }
 
 model VerificationToken {
