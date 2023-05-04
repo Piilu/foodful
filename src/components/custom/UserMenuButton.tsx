@@ -16,7 +16,7 @@ const UserMenuButton = () =>
             rounded={'md'}
             cursor={'pointer'}
             minW={0}>
-            <Group>
+            <Group noWrap>
                 <Avatar
                     size={'sm'}
                     name={session?.user?.name}

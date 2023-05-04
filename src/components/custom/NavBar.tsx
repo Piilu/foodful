@@ -37,7 +37,7 @@ const NavBar = () =>
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
-    <Box bg={useColorModeValue('gray.100', 'gray.900')} px={50}>
+    <Box bg={useColorModeValue('gray.100', 'gray.900')} mb={10} px={50}>
       <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
         {session ?
           <MediaQuery largerThan={"sm"} styles={{ display: "none" }}>
