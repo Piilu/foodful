@@ -5,10 +5,13 @@ import Link from "next/link";
 import { ExampleReqType, ExampleResType } from "./api/example";
 import axios from "axios";
 import { EndPoint } from "~/constants/EndPoints";
-import { Button } from "@chakra-ui/react";
+import { Button, Container } from "@chakra-ui/react";
+import { useSession } from "next-auth/react";
 
 const Home: NextPage = () =>
 {
+  const { data: session } = useSession();
+
   const exampleBackend = async () =>
   {
     const data: ExampleReqType = {
@@ -34,6 +37,8 @@ const Home: NextPage = () =>
   return (
     <div>
       <Button onClick={exampleBackend}>test</Button>
+
+      <p>Current user: {session?.user.name}</p>
     </div>
   );
 };

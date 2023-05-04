@@ -1,10 +1,12 @@
 import { type GetServerSidePropsContext } from "next";
-import {
+import
+{
   getServerSession,
   type NextAuthOptions,
   type DefaultSession,
 } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
+import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { env } from "~/env.mjs";
 import { prisma } from "~/server/db";
@@ -16,7 +18,8 @@ import { prisma } from "~/server/db";
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
 declare module "next-auth" {
-  interface Session extends DefaultSession {
+  interface Session extends DefaultSession
+  {
     user: {
       id: string;
       // ...other properties
@@ -47,11 +50,11 @@ export const authOptions: NextAuthOptions = {
   },
   adapter: PrismaAdapter(prisma),
   providers: [
-    DiscordProvider({
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
-    }),
-    /**
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    })
+    /**F
      * ...add more providers here.
      *
      * Most other providers require a bit more work than the Discord provider. For example, the
@@ -71,6 +74,7 @@ export const authOptions: NextAuthOptions = {
 export const getServerAuthSession = (ctx: {
   req: GetServerSidePropsContext["req"];
   res: GetServerSidePropsContext["res"];
-}) => {
+}) =>
+{
   return getServerSession(ctx.req, ctx.res, authOptions);
 };
