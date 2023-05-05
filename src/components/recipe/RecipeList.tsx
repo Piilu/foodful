@@ -89,7 +89,7 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
             {items?.length !== 0 ? items.map((item) =>
             {
                 return (
-                    <Recipe key={item.id} name={item.name} horizontal guidelines="Testing guidlines" info={item.description} />
+                    <Recipe key={item.id} name={item.name} horizontal guidelines="Testing guidlines" info={item.description} userId={item.userId} />
                 )
             }) : <Text align={"center"}> Not found</Text>}
             <Pagination mb={10} value={activePage} onChange={handlePageChange} total={pages} />
