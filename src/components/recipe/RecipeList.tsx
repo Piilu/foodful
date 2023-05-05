@@ -8,21 +8,24 @@ import { InputGroup, InputLeftElement, Input, Text } from "@chakra-ui/react";
 import { Recipe as RecipeBackType } from "@prisma/client";
 import { Pagination } from '@mantine/core';
 import { useScrollIntoView, useDebouncedState } from '@mantine/hooks';
+import { Loader } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 
 type RecipeListType = {
     limit: number;
     page: number;
     search?: boolean;
+    userId?: string;
 }
 
 const RecipeList: FunctionComponent<RecipeListType> = (props) =>
 {
     const [items, setItems] = useState<RecipeBackType[] | []>([]);
-    const { limit, page, search } = props;
+    const { limit, page, search, userId } = props;
     const [pages, setPages] = useState<number>(1);
     const [activePage, setActivePage] = useState<number>(page);
     const [value, setValue] = useDebouncedState<string | undefined>(undefined, 300)
+    const [loading, setLoading] = useState<boolean>(true);
     const { scrollIntoView, targetRef } = useScrollIntoView<HTMLDivElement>({
         offset: 60,
     });
@@ -49,7 +52,9 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
             page: activePage - 1,
             take: limit,
             searchName: value,
+            userId: userId,
         }
+        setLoading(true);
         await axios.post(`${window.origin}/${EndPoint.RECIPELIST}`, data).then((res) =>
         {
             const newData = res.data as RecipeResListGetType;
@@ -65,7 +70,8 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
         }).catch((err) =>
         {
             console.log(err);
-        });
+        }).finally(() => { setLoading(false) });
+
     };
 
     return (
@@ -79,13 +85,14 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
                     <Input type='text' onChange={(e) => { setValue(e.target.value) }} placeholder='Search by name' />
                 </InputGroup> : null}
             <div ref={targetRef}></div>
+            {loading ? <Loader mb={10} color='green' mx={"auto"} /> : null}
             {items?.length !== 0 ? items.map((item) =>
             {
                 return (
                     <Recipe key={item.id} name={item.name} horizontal guidelines="Testing guidlines" info={item.description} />
                 )
             }) : <Text align={"center"}> Not found</Text>}
-            <Pagination value={activePage} onChange={handlePageChange} total={pages} />
+            <Pagination mb={10} value={activePage} onChange={handlePageChange} total={pages} />
         </>
     )
 }

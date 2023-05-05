@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import React from "react";
-import {
+import
+{
   Card,
   CardBody,
   CardFooter,
@@ -19,10 +20,26 @@ import {
   Center
 } from "@chakra-ui/react";
 import Recipe from "~/components/auth/Recipe";
+import RecipeList from "~/components/recipe/RecipeList";
+import { requireAuth } from "~/utils/helpers";
+import { GetServerSidePropsContext, NextPage } from "next/types";
+import { useSession } from "next-auth/react";
+import { User } from "@prisma/client";
 
-const profile = () => {
-  const router = useRouter();
-  const name = router.query.name as string;
+export async function getServerSideProps(ctx: GetServerSidePropsContext)
+{
+  return await requireAuth(ctx, ctx.query.name as string);
+}
+
+type ProfileType = {
+  isProfileUser: boolean;
+  profileUser: User;
+};
+
+const profile: NextPage<ProfileType> = (props) =>
+{
+  const { isProfileUser, profileUser } = props;
+  const { data: session } = useSession();
   // const data = ["munad", "piim", "leib", "vorst", "juust"];
   return ( 
 <Flex
