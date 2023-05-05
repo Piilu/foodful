@@ -54,7 +54,7 @@ const profile: NextPage<ProfileType> = (props) =>
 >
   <Box flex="9">
     <Heading>
-      <Center>{name}&rsquo;s recipes</Center>
+      <Center>{profileUser.name}&rsquo;s recipes</Center>
     </Heading>
     {/* <UnorderedList>
       {data.map((item, index) => {
@@ -127,11 +127,11 @@ const profile: NextPage<ProfileType> = (props) =>
             <Flex spacing="4">
               <Flex flex="1" gap="3" alignItems="center" flexWrap="wrap">
                 <Avatar
-                  name={name}
+                  name={profileUser.name}
                   src="https://www.recipefy.com/media/W1siZiIsIjIwMTQvMTEvMjUvMTVfMzhfNTFfODQzX21pbmEwMDA3X2pwZy5qcGciXSxbInAiLCJhdXRvX29yaWVudCJdLFsicCIsInRodW1iIiwiMTYweDE2MCMiXSxbImUiLCJqcGciXV0/mina0007-jpg.jpg"
                 />
                 <Box>
-                  <Heading size="sm">{name}</Heading>
+                  <Heading size="sm">{profileUser.name}</Heading>
                 </Box>
               </Flex>
             </Flex>
