@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Card, CardBody, CardFooter, Button, Heading, Stack, Image, Text, Flex, Box, Icon, Avatar, IconButton   } from '@chakra-ui/react';
-//import { useSession } from 'next-auth/react';
+import { Card, CardBody, CardFooter, Button, Heading, Stack, Image, Text, Flex, Box, Icon, Avatar, IconButton } from '@chakra-ui/react';
+import { useSession } from 'next-auth/react';
 import { IconClock, IconDotsVertical, IconLicense, IconMessage } from '@tabler/icons-react';
 
 type Ingredient = {
@@ -14,13 +14,16 @@ type RecipeProps = {
     ingredients?: Ingredient[],
     guidelines: string
     horizontal?: boolean,
+    userId: string,
 
 }
 
 const Recipe: FunctionComponent<RecipeProps> = (props) => 
 {
-    const { name, ingredients, guidelines, info, horizontal } = props;
-    //const { data: session } = useSession();
+    const { name, ingredients, guidelines, info, horizontal, userId } = props;
+    const { data: session } = useSession();
+    const isOwner = session?.user?.id == userId;
+
     if (horizontal)
     {
         return (
@@ -70,7 +73,7 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                     />
                     <Stack mt='6' spacing='2'>
                         <Flex flex='1' gap='2' alignItems='center' flexWrap='wrap'>
-                            <Icon boxSize={7} as={IconClock} color='green'/>
+                            <Icon boxSize={7} as={IconClock} color='green' />
                             <Text>60 min</Text>
                         </Flex>
                         <Heading size='md'>{name}</Heading>
