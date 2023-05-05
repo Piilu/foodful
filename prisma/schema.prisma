@@ -53,23 +53,26 @@ model User {
     email         String?     @unique
     emailVerified DateTime?
     image         String?
+    bio           String?     @db.Text
+    website       String?
     accounts      Account[]
     sessions      Session[]
-    Recipe        Recipe[]
-    Favorites     Favorites[]
+    recipes       Recipe[]
+    favorites     Favorites[]
 }
 
 model Recipe {
-    id          Int           @id @default(autoincrement())
-    name        String
-    description String?       @db.Text
-    userId      String
-    user        User          @relation(fields: [userId], references: [id])
-    totalTime   Int?
-    createdAt   DateTime      @default(now())
-    updatedAt   DateTime      @updatedAt
-    ingredients ingredients[]
-    Favorites   Favorites[]
+    id           Int           @id @default(autoincrement())
+    name         String
+    description  String?       @db.Text
+    userId       String
+    user         User          @relation(fields: [userId], references: [id])
+    totalTime    Int?
+    createdAt    DateTime      @default(now())
+    updatedAt    DateTime      @updatedAt
+    ingredients  ingredients[]
+    Favorites    Favorites[]
+    instructions Instruction[]
 }
 
 model ingredients {
@@ -80,6 +83,14 @@ model ingredients {
     recipeId    Int
     recipe      Recipe  @relation(fields: [recipeId], references: [id])
     priority    Int
+}
+
+model Instruction {
+    id       Int    @id @default(autoincrement())
+    step     String @db.Text
+    priority Int
+    recipeId Int
+    recipe   Recipe @relation(fields: [recipeId], references: [id])
 }
 
 model Favorites {

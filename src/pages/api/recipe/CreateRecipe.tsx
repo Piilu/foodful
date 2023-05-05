@@ -1,8 +1,9 @@
 import { Heading, Stack, FormControl, FormLabel, Box, Input, Textarea, InputGroup, IconButton, Button } from '@chakra-ui/react'
 import { useForm } from '@mantine/form';
-import { ActionIcon } from '@mantine/core';
-import { IconPlus, IconX } from '@tabler/icons-react'
+import { ActionIcon, Center } from '@mantine/core';
+import { IconPlus, IconX, IconGripVertical } from '@tabler/icons-react'
 import React from 'react'
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 const CreateRecipe = () =>
 {
@@ -14,6 +15,10 @@ const CreateRecipe = () =>
             Ingredients: [
                 { name: 'Muna', amount: '1', description: "lahe" },
                 { name: 'Muna', amount: '1', description: "lahe" },
+            ],
+            instructions: [
+                { step: 'Muna' },
+                { name: 'Muna' },
             ],
         },
 
@@ -29,12 +34,26 @@ const CreateRecipe = () =>
     const ingredients = form.values.Ingredients.map((item, index) => (
         // eslint-disable-next-line react/jsx-key
         <InputGroup key={index} gap={5}>
-            {/* <p>Lisa asju</p> */}
             <Input {...form.getInputProps(`Ingredients.${index}.name`)} w={400} placeholder='Eggs, Bacon, Sauce' />
             <Input {...form.getInputProps(`Ingredients.${index}.amount`)} w={200} placeholder='2g' />
             <Input {...form.getInputProps(`Ingredients.${index}.description`)} w={200} placeholder='Small detail' />
-            <IconButton aria-label='Open recipe' onClick={() => form.removeListItem("Ingredients", index)} icon={<IconX />} ></IconButton>
+            <IconButton aria-label='Remove recipe' onClick={() => form.removeListItem("Ingredients", index)} icon={<IconX />} ></IconButton>
         </InputGroup >
+    ));
+
+    const instructions = form.values.instructions.map((item, index) => (
+        // eslint-disable-next-line react/jsx-key
+        <Draggable key={index} index={index} draggableId={index.toString()} >
+            {(provided) => (
+                <InputGroup ref={provided.innerRef} {...provided.draggableProps} gap={5}>
+                    <Center {...provided.dragHandleProps}>
+                        <IconGripVertical size="1.2rem" />
+                    </Center>
+                    <Input {...form.getInputProps(`instructions.${index}.step`)} placeholder='Step' />
+                    <IconButton aria-label='Remove recipe' onClick={() => form.removeListItem("instructions", index)} icon={<IconX />} ></IconButton>
+                </InputGroup >
+            )}
+        </Draggable>
     ));
 
     return (
@@ -57,10 +76,22 @@ const CreateRecipe = () =>
 
                 <IconButton aria-label='Add recipe' onClick={() => form.insertListItem('Ingredients', { name: '', amount: '', description: "" })} icon={<IconPlus />} />
 
-                <FormControl isRequired>
-                    <FormLabel>Instructions</FormLabel>
-                    <Textarea placeholder='Boil eggs' />
-                </FormControl>
+                <DragDropContext onDragEnd={({ destination, source }) =>
+                    form.reorderListItem('instructions', { from: source.index, to: destination.index })
+                }>
+                    <Droppable droppableId="dnd-list" direction="vertical">
+                        {(provided) => (
+                            <div {...provided.droppableProps} ref={provided.innerRef}>
+                                {instructions}
+                                {provided.placeholder}
+                            </div>
+                        )}
+
+                    </Droppable>
+                </DragDropContext>
+
+                <IconButton aria-label='Add instruction' onClick={() => form.insertListItem('instructions', { step: "" })} icon={<IconPlus />} />
+
             </Stack>
             <Button size="md" onClick={handleRecipeCreate} colorScheme='green'>Save</Button>
         </Box>
