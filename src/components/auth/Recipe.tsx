@@ -42,10 +42,19 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
 
                 <Stack>
                     <CardBody>
-                        <Heading size='md'>{name}</Heading>
+                        <Flex gap='2' alignItems='center'>
+                            <Heading size='md'>{name}</Heading>
+                            <Icon boxSize={7} as={IconClock} color='green'/>
+                            <Text>60 min</Text>
+                        </Flex>
                         <Text py='2'>
                             {info}
                         </Text>
+                        <Button flex='2' variant='ghost' leftIcon={<IconMessage />}>
+                        </Button>
+                        <Button variant='ghost' leftIcon={<IconLicense />}>
+                            Yum! 5
+                        </Button>
                     </CardBody>
                 </Stack>
             </Card>
@@ -78,7 +87,7 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                 </CardBody>
                 <CardFooter>
                     <Button flex='2' variant='ghost' leftIcon={<IconLicense />}>
-                        Yum!
+                        Yum! 5
                     </Button>
                     <Button flex='2' variant='ghost' leftIcon={<IconMessage />}>
                     </Button>
