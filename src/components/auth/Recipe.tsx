@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Card, CardBody, Heading, Stack, Image, Text } from '@chakra-ui/react';
+import { Card, CardBody, Heading, Stack, Image, Text, CardFooter, Button } from '@chakra-ui/react';
+import { IconClock, IconLicense } from '@tabler/icons-react';
 
 type Ingredient = {
     name: string,
@@ -64,8 +65,16 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                         <Text>
                             {guidelines}
                         </Text>
+                        <Text>
+                            60 minutes
+                        </Text>
                     </Stack>
                 </CardBody>
+                <CardFooter>
+                    <Button flex='1' variant='ghost' leftIcon={<IconLicense />}>
+                        Yum!
+                    </Button>
+                </CardFooter>
             </Card>
         )
     }
