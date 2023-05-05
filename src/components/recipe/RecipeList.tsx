@@ -4,10 +4,10 @@ import axios from 'axios';
 import { EndPoint } from '~/constants/EndPoints';
 import { RecipeReqListType, RecipeResListGetType } from '~/pages/api/recipe/list';
 import { RecipeReqGetType } from '~/pages/api/recipe';
-import { InputGroup, InputLeftElement, Input } from "@chakra-ui/react";
+import { InputGroup, InputLeftElement, Input, Text } from "@chakra-ui/react";
 import { Recipe as RecipeBackType } from "@prisma/client";
 import { Pagination } from '@mantine/core';
-import { useScrollIntoView } from '@mantine/hooks';
+import { useScrollIntoView, useDebouncedState } from '@mantine/hooks';
 import { IconSearch } from '@tabler/icons-react';
 
 type RecipeListType = {
@@ -22,6 +22,7 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
     const { limit, page, search } = props;
     const [pages, setPages] = useState<number>(1);
     const [activePage, setActivePage] = useState<number>(page);
+    const [value, setValue] = useDebouncedState<string | undefined>(undefined, 300)
     const { scrollIntoView, targetRef } = useScrollIntoView<HTMLDivElement>({
         offset: 60,
     });
@@ -34,12 +35,20 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
         })
     }
     useEffect(() => { getRecipes() }, [activePage]);
+    useEffect(() =>
+    {
+        if (value !== undefined)
+        {
+            getRecipes();
+        }
+    }, [value]);
 
     const getRecipes = async () =>
     {
         const data: RecipeReqListType = {
             page: activePage - 1,
             take: limit,
+            searchName: value,
         }
         await axios.post(`${window.origin}/${EndPoint.RECIPELIST}`, data).then((res) =>
         {
@@ -67,7 +76,7 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
                         pointerEvents='none'
                         children={<IconSearch />}
                     />
-                    <Input type='text' placeholder='Search by name' />
+                    <Input type='text' onChange={(e) => { setValue(e.target.value) }} placeholder='Search by name' />
                 </InputGroup> : null}
             <div ref={targetRef}></div>
             {items?.length !== 0 ? items.map((item) =>
@@ -75,7 +84,7 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
                 return (
                     <Recipe key={item.id} name={item.name} horizontal guidelines="Testing guidlines" info={item.description} />
                 )
-            }) : <>NOT FOUND </>}
+            }) : <Text align={"center"}> Not found</Text>}
             <Pagination value={activePage} onChange={handlePageChange} total={pages} />
         </>
     )
