@@ -12,10 +12,10 @@ import { requireAuth } from "~/utils/helpers";
 import Recipe from "~/components/auth/Recipe";
 import { Group, MediaQuery } from "@mantine/core"
 import { IconSearch } from "@tabler/icons-react"
+import RecipeList from "~/components/recipe/RecipeList";
 
 export async function getServerSideProps(ctx: GetServerSidePropsContext)
 {
-  const session = await getServerAuthSession(ctx)
   return await requireAuth(ctx);
 }
 
@@ -35,17 +35,7 @@ const Home: NextPage = () =>
       {/* See saab eraldi komponent olla */}
       <Box style={{ padding: "1em" }}>
         <Text align="center" pb={5} fontSize="4xl" >Search for recipes</Text>
-        <InputGroup mb={5}>
-          <InputLeftElement
-            pointerEvents='none'
-            children={<IconSearch />}
-          />
-          <Input type='text' placeholder='Search by name' />
-        </InputGroup>
-        <Recipe name="Test" horizontal guidelines="Testing guidlines" info="Info jeje" />
-        <Recipe name="Test" horizontal guidelines="Testing guidlines" info="Info jeje" />
-        <Recipe name="Test" horizontal guidelines="Testing guidlines" info="Info jeje" />
-        <Recipe name="Test" horizontal guidelines="Testing guidlines" info="Info jeje" />
+        <RecipeList search limit={10} page={1} />
       </Box>
 
     </>
