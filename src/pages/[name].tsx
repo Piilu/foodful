@@ -2,26 +2,20 @@ import { useRouter } from "next/router";
 import React from "react";
 import {
   Card,
-  CardHeader,
   CardBody,
   CardFooter,
   Container,
-  Image,
   Stack,
   Heading,
   Text,
-  Divider,
   ButtonGroup,
   Button,
   UnorderedList,
-  ListItem,
   Grid,
   GridItem,
   Flex,
   Avatar,
   Box,
-  IconButton,
-  WrapItem,
   Center
 } from "@chakra-ui/react";
 import Recipe from "~/components/auth/Recipe";
