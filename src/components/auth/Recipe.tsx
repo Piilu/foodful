@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Card, CardBody, Heading, Stack, Image, Text } from '@chakra-ui/react';
-import { useSession } from 'next-auth/react';
+import { Card, CardBody, CardFooter, Button, Heading, Stack, Image, Text, Flex, Box, Icon, Avatar, IconButton } from '@chakra-ui/react';
+//import { useSession } from 'next-auth/react';
+import { IconClock, IconDotsVertical, IconLicense, IconMessage } from '@tabler/icons-react';
 
 type Ingredient = {
     name: string,
@@ -19,6 +20,7 @@ type RecipeProps = {
 const Recipe: FunctionComponent<RecipeProps> = (props) => 
 {
     const { name, ingredients, guidelines, info, horizontal } = props;
+    //const { data: session } = useSession();
     if (horizontal)
     {
         return (
@@ -57,7 +59,11 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                         alt='Green double couch with wooden legs'
                         borderRadius='lg'
                     />
-                    <Stack mt='6' spacing='3'>
+                    <Stack mt='6' spacing='2'>
+                        <Flex flex='1' gap='2' alignItems='center' flexWrap='wrap'>
+                            <Icon boxSize={7} as={IconClock} color='green'/>
+                            <Text>60 min</Text>
+                        </Flex>
                         <Heading size='md'>{name}</Heading>
                         <Text>
                             {info}
@@ -65,14 +71,13 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                         <Text>
                             {guidelines}
                         </Text>
-                        <Text>
-                            60 minutes
-                        </Text>
                     </Stack>
                 </CardBody>
                 <CardFooter>
-                    <Button flex='1' variant='ghost' leftIcon={<IconLicense />}>
+                    <Button flex='2' variant='ghost' leftIcon={<IconLicense />}>
                         Yum!
+                    </Button>
+                    <Button flex='2' variant='ghost' leftIcon={<IconMessage />}>
                     </Button>
                 </CardFooter>
             </Card>
