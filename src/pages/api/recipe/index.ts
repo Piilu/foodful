@@ -1,72 +1,82 @@
+import { Recipe, ingredients } from "@prisma/client";
+import { NextApiRequest, NextApiResponse } from "next";
 import { getSession } from "next-auth/react";
-import { NextApiRequest, NextApiResponse } from "next/types";
-import { RecipeReqCreateType } from "./create";
+import { unknown } from "zod";
 import { prisma } from "~/server/db";
-import { Favorites, Recipe, User, ingredients } from "@prisma/client";
+
+export type RecipeReqCreateType = {
+    name: string,
+    description: string,
+    userId: string,
+    totalTime?: number,
+    ingredients: ingredients[]
+}
 
 export type RecipeReqGetType = {
-    id?: number,
-    userId?: string,
-    findMany?: boolean,
+    id: number,
 }
 
-export type RecipeResGetType = {
+export type RecipeResCreateType = {
     success: boolean,
-    recipe: (Recipe & {
-        user: User;
+    recipe: Recipe & {
         ingredients: ingredients[];
-        Favorites: Favorites[];
-    }) | null,
-    recipes: Recipe[],
-
-    error?: string
+    }
 }
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse)
 {
-    const response = {} as RecipeResGetType;
+    const response = {} as RecipeResCreateType;
     const session = await getSession({ req })
-    const { id, userId, findMany } = req.query as unknown as RecipeReqGetType;
+    const { name, description, userId, totalTime, ingredients } = req.body as RecipeReqCreateType;
     const method = req.method;
 
     try
     {
         if (method === "GET")
         {
-            if (findMany == "false")
-            {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                const recipe = await prisma?.recipe.findFirst({
-                    include: {
-                        ingredients: true,
-                        user: true,
-                        Favorites: true,
-                    },
-                    where: {
-                        id: parseInt(id),
-                    },
-                });
-            }
-
-            if (findMany == "true")
-            {
-                const recipes = await prisma?.recipe.findMany({
-                    where: {
-                        userId: userId,
-                    },
-                });
-
-                response.success = true;
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                response.recipes = recipes;
-                res.status(200).json(response);
-                return;
-            }
+            const { id } = req.query as unknown as RecipeReqGetType
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const recipe = await prisma.recipe.findUnique({
+                include: { ingredients: true },
+                where: {
+                    id: parseInt(id),
+                },
+            })
             response.success = true;
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             response.recipe = recipe;
             res.status(200).json(response);
             return;
         }
+
+        if (method === "POST" && session)
+        {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+            const recipe = await prisma.recipe.create({
+                include: {
+                    ingredients: true,
+                },
+                data: {
+                    userId: session?.user.id,
+                    name: name,
+                    description: description,
+                    totalTime: totalTime,
+                    ingredients: {
+                        createMany: {
+                            data: ingredients,
+                        }
+                    }
+                },
+            })
+
+
+            response.success = true;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            response.recipe = recipe;
+            res.status(200).json(response);
+            return;
+        }
+
         response.success = false;
         response.error = "Not allowed";
         res.status(401).json(response);
@@ -75,7 +85,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     catch (error: any)
     {
         response.success = false;
-        response.error = error.message as string;
+        response.error = error.message;
         res.status(500).json(response);
         return;
     }

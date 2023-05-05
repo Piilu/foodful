@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Card, CardBody, Heading, Stack, Image, Text } from '@chakra-ui/react';
+import { useSession } from 'next-auth/react';
 
 type Ingredient = {
     name: string,
