@@ -26,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 {
     const response = {} as RecipeResListGetType;
     const session = await getSession({ req })
-    const { page, take, searchName } = req.body as RecipeReqListType;
+    const { page, take, searchName, userId } = req.body as RecipeReqListType;
     const method = req.method;
 
     try
@@ -38,11 +38,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 skip: page * take,
                 take: take,
                 orderBy: { createdAt: "asc" },
-                where: { name: { contains: searchName } },
+                where: {
+                    name: { contains: searchName },
+                    ...(userId != undefined ? { userId: userId } : {}),
+                },
             });
 
             const totalRecipes = await prisma.recipe.count({
-                where: { name: { contains: searchName } },
+                where: {
+                    name: {
+                        contains: searchName,
+                    },
+                    ...(userId != undefined ? { userId: userId } : {}),
+                },
             });
 
             response.success = true;
