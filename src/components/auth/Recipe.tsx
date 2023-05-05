@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Card, CardBody, Heading, Stack, Image, Text, CardFooter, Button } from '@chakra-ui/react';
-import { IconClock, IconLicense } from '@tabler/icons-react';
+import { Card, CardBody, Heading, Stack, Image, Text } from '@chakra-ui/react';
+import { useSession } from 'next-auth/react';
 
 type Ingredient = {
     name: string,
