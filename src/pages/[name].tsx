@@ -42,7 +42,6 @@ const profile: NextPage<ProfileType> = (props) =>
 {
   const { isProfileUser, profileUser } = props;
   const { data: session } = useSession();
-  // const data = ["munad", "piim", "leib", "vorst", "juust"];
   return (
     <Flex
       align="flex-start"

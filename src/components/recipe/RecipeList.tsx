@@ -77,9 +77,7 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
 
     return (
         <>
-            {showUpperPagination ?
-                <Pagination style={{ float: "right" }} mb={10} value={activePage} onChange={handlePageChange} total={pages} />
-                : null}
+
             {search ?
                 <InputGroup mb={5}>
                     <InputLeftElement
@@ -88,6 +86,9 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
                     />
                     <Input type='text' onChange={(e) => { setValue(e.target.value) }} placeholder='Search by name' />
                 </InputGroup> : null}
+            {showUpperPagination ?
+                <Pagination w={"100%"} mb={10} value={activePage} onChange={handlePageChange} total={pages} />
+                : null}
             <div ref={targetRef}></div>
             {loading ? <Loader mb={10} color='green' mx={"auto"} /> : null}
             {items?.length !== 0 ? items.map((item) =>

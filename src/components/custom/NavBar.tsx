@@ -28,6 +28,7 @@ import NavLink from './NavLink';
 import { ActionIcon, MediaQuery } from '@mantine/core';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import UserMenuButton from './UserMenuButton';
+import ToggleColorMode from './ToggleColorMode';
 const Links: LinkType[] = [{ label: 'My recipes', link: "", isProfile: true }];
 
 const NavBar = () =>
@@ -66,7 +67,8 @@ const NavBar = () =>
             </HStack>
             : null}
         </HStack>
-        <Flex alignItems={'center'}>
+        <Flex gap={2} alignItems={'center'}>
+          <ToggleColorMode />
           {session ?
 
             <Menu>
