@@ -1,4 +1,4 @@
-import { Recipe, ingredients } from "@prisma/client";
+import { Instruction, Recipe, ingredients } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 import { getSession } from "next-auth/react";
 import { unknown } from "zod";
@@ -9,6 +9,7 @@ export type RecipeReqCreateType = {
     description: string,
     userId?: string,
     totalTime: number | null,
+    instructions: Instruction[],
     ingredients: ingredients[]
 }
 
@@ -28,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 {
     const response = {} as RecipeResCreateType;
     const session = await getSession({ req })
-    const { name, description, userId, totalTime, ingredients } = req.body as RecipeReqCreateType;
+    const { name, description, userId, totalTime, ingredients, instructions } = req.body as RecipeReqCreateType;
     const method = req.method;
     console.log("Session: ", session)
 
@@ -67,7 +68,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         createMany: {
                             data: ingredients,
                         }
-                    }
+                    },
+                    instructions: {
+                        createMany: {
+                            data: instructions,
+                        }
+                    },
                 },
             })
 

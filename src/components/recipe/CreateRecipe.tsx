@@ -7,6 +7,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import axios from 'axios';
 import { EndPoint } from '~/constants/EndPoints';
 import { RecipeReqCreateType, RecipeResCreateType } from '~/pages/api/recipe';
+import { Instruction, ingredients } from '@prisma/client';
 
 const CreateRecipe = () =>
 {
@@ -46,15 +47,17 @@ const CreateRecipe = () =>
             return;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        const instructionsPriority = form.values.instructions.map((item, index) => ({ ...item, priority: index }));
+        const IngredientsPriority = form.values.Ingredients.map((item, index) => ({ ...item, priority: index }));
         const data: RecipeReqCreateType = {
             name: form.values.name,
             description: form.values.description,
-            totalTime: parseInt(form.values.totalTime),
-            // instructions: form.values.instructions,
-            ingredients: form.values.Ingredients,
+            totalTime: form.values.totalTime != null ? parseInt(form.values.totalTime) : null,
+            instructions: instructionsPriority as Instruction[],
+            ingredients: IngredientsPriority as ingredients[],
         }
 
-        console.log(form.values.Ingredients);
         await axios.post(`${window.origin}${EndPoint.RECIPE}`, data).then((res) =>
         {
             const newData = res.data as RecipeResCreateType;
@@ -111,7 +114,6 @@ const CreateRecipe = () =>
                 <FormControl >
                     <FormLabel>Amount</FormLabel>
                     <Input {...form.getInputProps(`Ingredients.${index}.amount`)} placeholder='2tk' />
-                    <Input type='hidden' {...form.getInputProps(`Ingredients.${index}.priority`)} />
                 </FormControl></Grid.Col>
             <Grid.Col span={1} mt={"auto"} miw={"5em"}>
                 <FormControl >
