@@ -1,34 +1,45 @@
-import React, { FunctionComponent, useEffect, useState } from 'react'
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react'
 import Recipe from '../auth/Recipe'
 import axios from 'axios';
 import { EndPoint } from '~/constants/EndPoints';
 import { RecipeReqListType, RecipeResListGetType } from '~/pages/api/recipe/list';
 import { RecipeReqGetType } from '~/pages/api/recipe';
-import { InputGroup, InputLeftElement, Input, Text } from "@chakra-ui/react";
+import { InputGroup, InputLeftElement, Input, Text, Checkbox, useDisclosure } from "@chakra-ui/react";
 import { Recipe as RecipeBackType } from "@prisma/client";
-import { Pagination } from '@mantine/core';
+import { Group, Pagination } from '@mantine/core';
 import { useScrollIntoView, useDebouncedState } from '@mantine/hooks';
 import { Loader } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
+import { useRouter } from 'next/router';
+import SearchNotFound from '../custom/SearchNotFound';
+import CreateRecipe from './CreateRecipe';
+import { set } from 'zod';
 
 type RecipeListType = {
     limit: number;
     page: number;
     search?: boolean;
     userId?: string;
+    showUpperPagination?: boolean;
+    showFavorites?: boolean;
 }
 
 const RecipeList: FunctionComponent<RecipeListType> = (props) =>
 {
     const [items, setItems] = useState<RecipeBackType[] | []>([]);
-    const { limit, page, search, userId } = props;
+    const { limit, page, search, userId, showUpperPagination, showFavorites } = props;
     const [pages, setPages] = useState<number>(1);
     const [activePage, setActivePage] = useState<number>(page);
     const [value, setValue] = useDebouncedState<string | undefined>(undefined, 300)
     const [loading, setLoading] = useState<boolean>(true);
+    const [favorite, setFavorite] = useState<boolean>(false);
+    const router = useRouter();
+    const checkRef = useRef<React.LegacyRef<HTMLInputElement> | undefined>();
+    const [openRecipeId, setOpenRecipeId] = useState<number | null>(null);
     const { scrollIntoView, targetRef } = useScrollIntoView<HTMLDivElement>({
         offset: 60,
     });
+    const { isOpen, onOpen, onClose } = useDisclosure();
 
     const handlePageChange = (page: number) =>
     {
@@ -37,7 +48,14 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
             alignment: 'center',
         })
     }
-    useEffect(() => { getRecipes() }, [activePage]);
+    useEffect(() =>
+    {
+        if (showFavorites)
+        {
+            router.push({ query: { ...router.query, favorite: checkRef.current.checked } }, undefined, { shallow: true, });
+        }
+        getRecipes();
+    }, [activePage, favorite]);
     useEffect(() =>
     {
         if (value !== undefined)
@@ -46,6 +64,12 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
         }
     }, [value]);
 
+    const openRecipeModal = (id: number) =>
+    {
+        console.log("OPEN MODAL",id);
+        setOpenRecipeId(id);
+        onOpen();
+    }
     const getRecipes = async () =>
     {
         const data: RecipeReqListType = {
@@ -53,6 +77,7 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
             take: limit,
             searchName: value,
             userId: userId,
+            favorite: showFavorites ? checkRef.current?.checked : false,
         }
         setLoading(true);
         await axios.post(`${window.origin}/${EndPoint.RECIPELIST}`, data).then((res) =>
@@ -76,6 +101,7 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
 
     return (
         <>
+            <CreateRecipe recipeId={openRecipeId} isOpen={isOpen} isModal onClose={onClose} />
             {search ?
                 <InputGroup mb={5}>
                     <InputLeftElement
@@ -84,15 +110,26 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
                     />
                     <Input type='text' onChange={(e) => { setValue(e.target.value) }} placeholder='Search by name' />
                 </InputGroup> : null}
+
+            <Group position='right' mb={10}>
+                {/* {showUpperPagination ?
+                    <Pagination mb={10} value={activePage} onChange={handlePageChange} total={pages} />
+                    : null} */}
+                {showFavorites ?
+                    <Checkbox ref={checkRef} colorScheme='green' onChange={setFavorite} checked={favorite} defaultChecked={false}>
+                        Favorites
+                    </Checkbox>
+                    : null}
+            </Group>
             <div ref={targetRef}></div>
             {loading ? <Loader mb={10} color='green' mx={"auto"} /> : null}
             {items?.length !== 0 ? items.map((item) =>
             {
                 return (
-                    <Recipe key={item.id} name={item.name} horizontal guidelines="Testing guidlines" info={item.description} userId={item.userId} />
+                    <Recipe openRecipeModal={openRecipeModal} key={item.id} horizontal recipe={item} userId={item.userId} />
                 )
-            }) : <Text align={"center"}> Not found</Text>}
-            <Pagination mb={10} value={activePage} onChange={handlePageChange} total={pages} />
+            }) : <SearchNotFound value="Can't find any recipes" />}
+            <Pagination style={{ float: "right" }} mb={10} value={activePage} onChange={handlePageChange} total={pages} />
         </>
     )
 }

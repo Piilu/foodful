@@ -13,6 +13,7 @@ import Recipe from "~/components/auth/Recipe";
 import { Group, MediaQuery } from "@mantine/core"
 import { IconSearch } from "@tabler/icons-react"
 import RecipeList from "~/components/recipe/RecipeList";
+import PopularRecipes from "~/components/custom/PopularRecipes";
 
 export async function getServerSideProps(ctx: GetServerSidePropsContext)
 {
@@ -27,9 +28,7 @@ const Home: NextPage = () =>
       {/* See saab eraldi komponent olla */}
       <Text align="center" pb={5} fontSize="4xl" > Todays hot recipes</Text>
       <Group style={{ justifyContent: "center" }}>
-        <Recipe name="Test" guidelines="Testing guidlines" info="Info jeje" />
-        <Recipe name="Test" guidelines="Testing guidlines" info="Info jeje" />
-        <Recipe name="Test" guidelines="Testing guidlines" info="Info jeje" />
+        <PopularRecipes />
       </Group>
 
       {/* See saab eraldi komponent olla */}
