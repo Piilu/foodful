@@ -31,7 +31,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const session = await getSession({ req })
     const { name, description, userId, totalTime, ingredients, instructions } = req.body as RecipeReqCreateType;
     const method = req.method;
-    console.log("Session: ", session)
 
     try
     {

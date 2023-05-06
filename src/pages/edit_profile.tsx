@@ -1,74 +1,42 @@
-import { Heading, FormControl, FormLabel, Input, Textarea, Button, Box } from "@chakra-ui/react";
+import { Button, useDisclosure } from "@chakra-ui/react";
+import { User } from "@prisma/client";
 import { GetServerSidePropsContext } from "next";
-import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
+import EditProfile from "~/components/profile/EditProfile";
+import CreateRecipe from "~/components/recipe/CreateRecipe";
+import CreateRecipeModal from "~/components/recipe/CreateRecipeModal";
 import { requireAuth } from "~/utils/helpers";
+import { getUser } from "~/utils/queries/get-user";
 
 export async function getServerSideProps(ctx: GetServerSidePropsContext)
 {
   return await requireAuth(ctx);
 }
 
-const edit_profile = () => {
-    const router = useRouter();
-    const website: string = "";
-    const nickname: string = "";
-    const bio: string = "";
-    const imageLink: string = "";
-    
+const edit_profile = () =>
+{
+  const { data: session } = useSession();
+  const [user, setUser] = useState<User>();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  useEffect(() =>
+  {
+    getUserData();
+  }, [])
 
-    return (
-        <Box
-        as="form"
-        
-        p={8}
-        borderRadius="lg"
-        boxShadow="base"
-        maxWidth="500px"
-        mx="auto"
-      >
-        <Heading size="lg" mb={6}>Edit Profile</Heading>
-  
-        <FormControl id="nickname" mb={4}>
-          <FormLabel>Nickname</FormLabel>
-          <Input
-            type="text"
-            value={nickname}     
-            //onChange={(e) => setNickname(e.target.value)}       
-          />
-        </FormControl>
+  const getUserData = async () =>
+  {
+    setUser(await getUser(session?.user?.id as string) as User);
 
-        <FormControl id="imageLink" mb={4}>
-        <FormLabel>Image Link</FormLabel>
-        <Input
-          type="url"
-          value={imageLink}
-          //onChange={(e) => setImageLink(e.target.value)}
-        />
-      </FormControl>
-  
-        <FormControl id="bio" mb={4}>
-          <FormLabel>Bio</FormLabel>
-          <Textarea
-            value={bio}   
-            //onChange={(e) => setBio(e.target.value)}         
-          />
-        </FormControl>
-  
-        <FormControl id="website" mb={4}>
-          <FormLabel>Website</FormLabel>
-          <Input
-            type="url"
-            value={website}           
-           // onChange={(e) => setWebsite(e.target.value)} 
-          />
-        </FormControl>
-  
-        <Button         
-        loadingText='Saving'
-        colorScheme="green" 
-        type="submit">Save</Button>
-      </Box>
-        );
-    };
-    
-    export default edit_profile;
+  }
+
+  return (
+    <>
+      <Button onClick={onOpen}></Button>
+      <CreateRecipe isOpen={isOpen} isModal onOpen={onOpen} onClose={onClose} />
+      <EditProfile user={user as User} />
+    </>
+  );
+};
+
+export default edit_profile;

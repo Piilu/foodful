@@ -1,17 +1,24 @@
-import { Heading, Stack, FormControl, FormLabel, Box, Input, Textarea, InputGroup, IconButton, Button, FormHelperText, Text, Flex, useToast, Wrap, WrapItem, AlertIcon, Divider, Alert, AlertDescription, AlertTitle, List, ListItem, ListIcon } from '@chakra-ui/react'
+import { Heading, Stack, FormControl, FormLabel, Box, Input, Textarea, InputGroup, IconButton, Button, Modal, FormHelperText, Text, Flex, useToast, Wrap, WrapItem, AlertIcon, Divider, Alert, AlertDescription, AlertTitle, List, ListItem, ListIcon, ModalFooter, ModalHeader, useDisclosure, ModalBody, ModalCloseButton, ModalContent, ModalOverlay } from '@chakra-ui/react'
 import { useForm } from '@mantine/form';
 import { ActionIcon, Center, Group, Grid } from '@mantine/core';
 import { IconPlus, IconX, IconGripVertical, IconSearch } from '@tabler/icons-react'
-import React, { useEffect, useState } from 'react'
+import React, { FunctionComponent, useEffect, useState } from 'react'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import axios from 'axios';
 import { EndPoint } from '~/constants/EndPoints';
 import { RecipeReqCreateType, RecipeResCreateType } from '~/pages/api/recipe';
 import { Instruction, ingredients } from '@prisma/client';
 
-const CreateRecipe = () =>
+type CreateRecipeType = {
+    isModal?: boolean;
+    isOpen?: boolean;
+    onClose?: () => void;
+}
+const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
 {
+    const { isOpen, onClose, isModal } = props;
     const [winReady, setWinReady] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<string[]>([]);
     const toast = useToast();
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -19,7 +26,7 @@ const CreateRecipe = () =>
         initialValues: {
             name: "",
             description: "",
-            totalTime: null,
+            totalTime: 0,
             Ingredients: [
             ],
             instructions: [
@@ -29,13 +36,21 @@ const CreateRecipe = () =>
         validate: {
             name: (value) => (value.length >= 3 && value.length <= 150 ? null : "Name has to be between 3 and 150 characters"),
             instructions: (values) => (values.every(value => value.step !== "") && values.length > 0 ? null : "Every instruction needs to have a step and recipe has to have at least one instruction"),
-            totalTime: (value) => (value != null ? null : "Total time is required"),
+            totalTime: (value) => (value != null && value != 0 ? null : "Total time is required"),
         },
     });
     useEffect(() => { setWinReady(true); }, []);
 
-    const handleRecipeCreate = async () =>
+
+    useEffect(() =>
     {
+        form.reset()
+
+    }, [isOpen]);
+
+    const handleRecipeCreate = async (event: React.FormEvent<HTMLFormElement>) =>
+    {
+        event.preventDefault();
         setErrors([]);
         if (form.isValid() === false)
         {
@@ -57,7 +72,7 @@ const CreateRecipe = () =>
             instructions: instructionsPriority as Instruction[],
             ingredients: IngredientsPriority as ingredients[],
         }
-
+        setLoading(true);
         await axios.post(`${window.origin}${EndPoint.RECIPE}`, data).then((res) =>
         {
             const newData = res.data as RecipeResCreateType;
@@ -90,7 +105,7 @@ const CreateRecipe = () =>
                 duration: 9000,
                 isClosable: true,
             })
-        });
+        }).finally(() => setLoading(false));
 
     }
 
@@ -139,74 +154,154 @@ const CreateRecipe = () =>
         </Draggable>
     ));
 
-    return (
-        <Box as="form" p={8} borderRadius="lg" boxShadow="base" mx="auto">
-            {errors.length !== 0 ?
-                <Alert borderRadius={15} status='error'>
-                    <AlertIcon />
-                    <Box>
-                        <AlertTitle>Error creating a recipe!</AlertTitle>
-                        <AlertDescription>
+    if (isModal)
+    {
+        return (
+            <Modal isOpen={isOpen as boolean} onClose={onClose as (() => void)} size='6xl' scrollBehavior={"inside"}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalCloseButton />
+                    <ModalHeader>Add new Recipe</ModalHeader>
+                    <ModalBody>
+                        <form id="createRecipe" onSubmit={(e) => handleRecipeCreate(e)}>
+                            {errors.length !== 0 ?
+                                <Alert borderRadius={15} status='error'>
+                                    <AlertIcon />
+                                    <Box>
+                                        <AlertTitle>Error creating a recipe!</AlertTitle>
+                                        <AlertDescription>
 
-                            <List>
-                                {errors.length !== 0 ? errors.map((error, index) => (
-                                    <ListItem key={index.toString() + "error"}>
-                                        <ListIcon as={IconX} color='red' />
-                                        {error}
-                                    </ListItem>
-                                )) : null}
-                            </List>
-                        </AlertDescription>
-                    </Box>
-                </Alert>
-                : null}
+                                            <List>
+                                                {errors.length !== 0 ? errors.map((error, index) => (
+                                                    <ListItem key={index.toString() + "error"}>
+                                                        <ListIcon as={IconX} color='red' />
+                                                        {error}
+                                                    </ListItem>
+                                                )) : null}
+                                            </List>
+                                        </AlertDescription>
+                                    </Box>
+                                </Alert>
 
-            <Heading mb={5} size='xl'>Add new Recipe</Heading>
+                                : null}
+                            <Stack spacing='4'>
+                                <FormControl isRequired>
+                                    <FormLabel>Recipe Name</FormLabel>
+                                    <Input type='name'  {...form.getInputProps("name")} />
+                                </FormControl>
+                                <FormControl isRequired>
+                                    <FormLabel mb={0}>Total time (<small style={{ margin: 0 }}>In minutes</small>)</FormLabel>
+                                    <Input type='number'  {...form.getInputProps("totalTime")} />
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel>Description</FormLabel>
+                                    <Textarea placeholder='Mexican dish' {...form.getInputProps("description")} />
+                                </FormControl>
 
-            <Stack spacing='4'>
-                <FormControl isRequired>
-                    <FormLabel>Recipe Name</FormLabel>
-                    <Input type='name'  {...form.getInputProps("name")} />
-                </FormControl>
-                <FormControl isRequired>
-                    <FormLabel mb={0}>Total time (<small style={{ margin: 0 }}>In minutes</small>)</FormLabel>
-                    <Input type='number'  {...form.getInputProps("totalTime")} />
-                </FormControl>
-                <FormControl isRequired>
-                    <FormLabel>Description</FormLabel>
-                    <Textarea placeholder='Mexican dish' {...form.getInputProps("description")} />
-                </FormControl>
+                                <Heading as='h4' size='md'>Ingredients</Heading>
+                                {ingredients}
+                                <IconButton aria-label='Add recipe' onClick={() => form.insertListItem('Ingredients', { name: '', amount: '', description: "" })} icon={<IconPlus />} />
+                                <Divider />
+                                <Heading as='h4' size='md'>Instructions</Heading>
+                                <small style={{ margin: 0 }}>The order everthing has to be done</small>
+                                <DragDropContext
+                                    onDragEnd={({ destination, source }) =>
+                                        form.reorderListItem('instructions', { from: source.index, to: destination?.index })
+                                    }
+                                >
+                                    <Droppable droppableId="dnd-list" direction="vertical">
+                                        {(provided) => (
+                                            <div {...provided.droppableProps} ref={provided.innerRef}>
+                                                {winReady ? instructions : null}
+                                                {provided.placeholder}
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </DragDropContext>
 
-                <Heading as='h4' size='md'>Ingredients</Heading>
-                {ingredients}
-                <IconButton aria-label='Add recipe' onClick={() => form.insertListItem('Ingredients', { name: '', amount: '', description: "" })} icon={<IconPlus />} />
-                <Divider />
-                <Heading as='h4' size='md'>Instructions</Heading>
-                <small style={{ margin: 0 }}>The order everthing has to be done</small>
-                <DragDropContext
-                    onDragEnd={({ destination, source }) =>
-                        form.reorderListItem('instructions', { from: source.index, to: destination?.index })
-                    }
-                >
-                    <Droppable droppableId="dnd-list" direction="vertical">
-                        {(provided) => (
-                            <div {...provided.droppableProps} ref={provided.innerRef}>
-                                {winReady ? instructions : null}
-                                {provided.placeholder}
-                            </div>
-                        )}
-                    </Droppable>
-                </DragDropContext>
+                                <IconButton aria-label='Add instruction' onClick={() => form.insertListItem('instructions', { step: "" })} icon={<IconPlus />} />
 
-                <IconButton aria-label='Add instruction' onClick={() => form.insertListItem('instructions', { step: "" })} icon={<IconPlus />} />
+                            </Stack>
 
-            </Stack>
-            <Stack spacing='4' mt={5}>
+                        </form>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button form='createRecipe' isLoading={loading} ml={"auto"} size="md" type='submit' colorScheme='green'>Save</Button>
 
-                <Button ml={"auto"} size="md" onClick={handleRecipeCreate} colorScheme='green'>Save</Button>
-            </Stack>
-        </Box>
-    )
+                    </ModalFooter>
+                </ModalContent>
+            </Modal >
+        );
+    }
+    else
+    {
+        return (
+            <form onSubmit={(e) => handleRecipeCreate(e)}>
+                {errors.length !== 0 ?
+                    <Alert borderRadius={15} status='error'>
+                        <AlertIcon />
+                        <Box>
+                            <AlertTitle>Error creating a recipe!</AlertTitle>
+                            <AlertDescription>
+
+                                <List>
+                                    {errors.length !== 0 ? errors.map((error, index) => (
+                                        <ListItem key={index.toString() + "error"}>
+                                            <ListIcon as={IconX} color='red' />
+                                            {error}
+                                        </ListItem>
+                                    )) : null}
+                                </List>
+                            </AlertDescription>
+                        </Box>
+                    </Alert>
+                    : null}
+                <Heading mb={5} size='xl'>Add new Recipe</Heading>
+
+                <Stack spacing='4'>
+                    <FormControl isRequired>
+                        <FormLabel>Recipe Name</FormLabel>
+                        <Input type='name'  {...form.getInputProps("name")} />
+                    </FormControl>
+                    <FormControl isRequired>
+                        <FormLabel mb={0}>Total time (<small style={{ margin: 0 }}>In minutes</small>)</FormLabel>
+                        <Input type='number'  {...form.getInputProps("totalTime")} />
+                    </FormControl>
+                    <FormControl>
+                        <FormLabel>Description</FormLabel>
+                        <Textarea placeholder='Mexican dish' {...form.getInputProps("description")} />
+                    </FormControl>
+
+                    <Heading as='h4' size='md'>Ingredients</Heading>
+                    {ingredients}
+                    <IconButton aria-label='Add recipe' onClick={() => form.insertListItem('Ingredients', { name: '', amount: '', description: "" })} icon={<IconPlus />} />
+                    <Divider />
+                    <Heading as='h4' size='md'>Instructions</Heading>
+                    <small style={{ margin: 0 }}>The order everthing has to be done</small>
+                    <DragDropContext
+                        onDragEnd={({ destination, source }) =>
+                            form.reorderListItem('instructions', { from: source.index, to: destination?.index })
+                        }
+                    >
+                        <Droppable droppableId="dnd-list" direction="vertical">
+                            {(provided) => (
+                                <div {...provided.droppableProps} ref={provided.innerRef}>
+                                    {winReady ? instructions : null}
+                                    {provided.placeholder}
+                                </div>
+                            )}
+                        </Droppable>
+                    </DragDropContext>
+
+                    <IconButton aria-label='Add instruction' onClick={() => form.insertListItem('instructions', { step: "" })} icon={<IconPlus />} />
+
+                </Stack>
+                <Stack spacing='4' mt={5}>
+                    <Button isLoading={loading} ml={"auto"} size="md" type='submit' colorScheme='green'>Save</Button>
+                </Stack>
+            </form>
+        )
+    }
 }
 
 export default CreateRecipe

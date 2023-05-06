@@ -5,7 +5,8 @@ import { ChakraProvider, ThemeConfig } from '@chakra-ui/react'
 
 import "~/styles/globals.css";
 import NavBar from "~/components/custom/NavBar";
-import { Container } from "@mantine/core";
+import { Container, Modal } from "@mantine/core";
+import { ModalsProvider } from '@mantine/modals';
 import { extendTheme } from "@chakra-ui/react"
 
 const MyApp: AppType<{ session: Session | null }> = ({
@@ -22,13 +23,17 @@ const MyApp: AppType<{ session: Session | null }> = ({
 
   return (
     <ChakraProvider theme={theme} >
-      <SessionProvider session={session}>
-        <NavBar />
-        <Container size={"xl"}>
-          <Component {...pageProps} />
-        </Container>
-      </SessionProvider>
+      <ModalsProvider>
+        <SessionProvider session={session}>
+          <NavBar />
+          <Container size={"xl"} >
+            <Component {...pageProps} />
+          </Container>
+        </SessionProvider>
+      </ModalsProvider>
+
     </ChakraProvider>
+
   );
 };
 
