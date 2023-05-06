@@ -7,8 +7,8 @@ import { prisma } from "~/server/db";
 export type RecipeReqCreateType = {
     name: string,
     description: string,
-    userId: string,
-    totalTime?: number,
+    userId?: string,
+    totalTime: number | null,
     ingredients: ingredients[]
 }
 
@@ -21,6 +21,7 @@ export type RecipeResCreateType = {
     recipe: Recipe & {
         ingredients: ingredients[];
     }
+    error?: string,
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse)
@@ -29,6 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const session = await getSession({ req })
     const { name, description, userId, totalTime, ingredients } = req.body as RecipeReqCreateType;
     const method = req.method;
+    console.log("Session: ", session)
 
     try
     {
@@ -48,9 +50,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             res.status(200).json(response);
             return;
         }
-
         if (method === "POST" && session)
         {
+            console.log("Data: ", ingredients)
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             const recipe = await prisma.recipe.create({
                 include: {

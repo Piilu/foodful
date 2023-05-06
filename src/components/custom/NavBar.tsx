@@ -79,7 +79,7 @@ const NavBar = () =>
               </MenuList>
             </Menu>
 
-            : <Button size="md" colorScheme='green' onClick={() => signIn()}>Login</Button>}
+            : <Button size="md" colorScheme='green' onClick={(e) => { e.preventDefault(); signIn() }}>Login</Button>}
         </Flex>
       </Flex>
 

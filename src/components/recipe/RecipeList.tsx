@@ -16,12 +16,13 @@ type RecipeListType = {
     page: number;
     search?: boolean;
     userId?: string;
+    showUpperPagination?: boolean;
 }
 
 const RecipeList: FunctionComponent<RecipeListType> = (props) =>
 {
     const [items, setItems] = useState<RecipeBackType[] | []>([]);
-    const { limit, page, search, userId } = props;
+    const { limit, page, search, userId, showUpperPagination } = props;
     const [pages, setPages] = useState<number>(1);
     const [activePage, setActivePage] = useState<number>(page);
     const [value, setValue] = useDebouncedState<string | undefined>(undefined, 300)
@@ -76,6 +77,9 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
 
     return (
         <>
+            {showUpperPagination ?
+                <Pagination style={{ float: "right" }} mb={10} value={activePage} onChange={handlePageChange} total={pages} />
+                : null}
             {search ?
                 <InputGroup mb={5}>
                     <InputLeftElement
@@ -92,7 +96,7 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
                     <Recipe key={item.id} name={item.name} horizontal guidelines="Testing guidlines" info={item.description} userId={item.userId} />
                 )
             }) : <Text align={"center"}> Not found</Text>}
-            <Pagination mb={10} value={activePage} onChange={handlePageChange} total={pages} />
+            <Pagination style={{ float: "right" }} mb={10} value={activePage} onChange={handlePageChange} total={pages} />
         </>
     )
 }
