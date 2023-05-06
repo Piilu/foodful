@@ -38,7 +38,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             res.status(200).json(response);
             return;
         }
-        console.log(session)
         if (method === "PUT" && session)
         {
             if (name === null || name === "")

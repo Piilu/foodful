@@ -5,4 +5,5 @@ export enum EndPoint
     POPULARRECIPE = "/api/recipe/popular",
     RECIPELIST = "/api/recipe/list",
     USER = "/api/user",
+    USERCOUNT = "/api/user/count",
 }

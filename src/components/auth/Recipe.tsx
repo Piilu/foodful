@@ -1,10 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { Card, CardBody, CardFooter, Button, Heading, Stack, Image, Text, Flex, Box, Icon, Avatar, IconButton, border, MenuButton, Menu, MenuList, MenuItem, Portal, useDisclosure } from '@chakra-ui/react';
+import { Card, CardBody, CardFooter, Button, Heading, Stack, Image, Text, Flex, Box, Icon, Avatar, IconButton, border, MenuButton, Menu, MenuList, MenuItem, Portal, useDisclosure, useColorMode } from '@chakra-ui/react';
 import { useSession } from 'next-auth/react';
 import { IconClock, IconDotsVertical, IconLicense, IconMessage } from '@tabler/icons-react';
 import { ActionIcon, Group, MediaQuery } from '@mantine/core';
 import CreateRecipe from '../recipe/CreateRecipe';
 import { Recipe as RecipePrisma } from '@prisma/client';
+import { useRouter } from 'next/router';
 
 type Ingredient = {
     name: string,
@@ -15,25 +16,27 @@ type RecipeProps = {
     horizontal?: boolean,
     recipe: RecipePrisma,
     userId: string,
+    openRecipeModal: (id: number) => void
 }
 
 const Recipe: FunctionComponent<RecipeProps> = (props) => 
 {
-    const { recipe, horizontal, userId } = props;
+    const { recipe, horizontal, userId, openRecipeModal } = props;
     const { data: session } = useSession();
     const isOwner = session?.user?.id == userId;
-    const { isOpen, onOpen, onClose } = useDisclosure();
+    const { colorMode, toggleColorMode } = useColorMode()
+    const isDark = colorMode === 'dark'
+    const router = useRouter();
 
-    const openRecipeModal = () =>
+    const openRecipeView = () =>
     {
-        onOpen();
+        void router.replace(`/recipe/${recipe.id}`, undefined);
     }
 
     if (horizontal)
     {
         return (
             <>
-                <CreateRecipe isOpen={isOpen} isModal onClose={onClose} />
                 <Card
                     mb={5}
                     direction={{ base: 'column', sm: 'row' }}
@@ -48,7 +51,7 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                     />
 
                     <Group>
-                        <Stack >
+                        <Stack w={"100%"} >
                             <CardBody>
                                 <Flex gap='2' alignItems='center'>
                                     <Heading size='md'>{recipe.name}</Heading>
@@ -62,7 +65,7 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                                                 </MenuButton>
                                                 <Portal>
                                                     <MenuList>
-                                                        <MenuItem onClick={openRecipeModal}>Edit</MenuItem>
+                                                        <MenuItem onClick={() => openRecipeModal(recipe.id)}>Edit</MenuItem>
                                                         <MenuItem color={"red"}>Delete</MenuItem>
                                                     </MenuList>
                                                 </Portal>
@@ -82,24 +85,26 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                         </Stack>
                     </Group>
                     <MediaQuery smallerThan={"xs"} styles={{ display: "none" }}>
-                        <div style={{ marginLeft: "auto" }}>
+                        <div style={{ marginLeft: "auto"}}>
                             <Stack mt={0} >
                                 <CardBody>
                                     {isOwner ?
                                         <Menu>
-                                            <MenuButton as={ActionIcon}>
+                                            <MenuButton as={ActionIcon} ml={"auto"}>
                                                 <IconDotsVertical />
                                             </MenuButton>
                                             <Portal>
                                                 <MenuList>
-                                                    <MenuItem onClick={openRecipeModal}>Edit</MenuItem>
+                                                    <MenuItem onClick={() => openRecipeModal(recipe.id)}>Edit</MenuItem>
                                                     <MenuItem color={"red"}>Delete</MenuItem>
                                                 </MenuList>
                                             </Portal>
                                         </Menu>
                                         : null}
                                 </CardBody>
-
+                                <CardBody>
+                                    <Button onClick={openRecipeView} colorScheme='green'>Open</Button>
+                                </CardBody>
                             </Stack>
                         </div>
                     </MediaQuery>

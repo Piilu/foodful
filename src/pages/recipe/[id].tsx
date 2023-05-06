@@ -1,8 +1,28 @@
 import { Card, Container, CardHeader, Box, Heading, Text, Image, CardBody, CardFooter, Button, Stack, StackDivider } from '@chakra-ui/react';
+import { Favorites, Instruction, Recipe, User, ingredients } from '@prisma/client';
+import { GetServerSidePropsContext, NextPage } from 'next';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 import React from 'react'
-
-export const recipe = () =>
+import { requireAuth } from '~/utils/helpers';
+export async function getServerSideProps(ctx: GetServerSidePropsContext)
 {
+  return await requireAuth(ctx, undefined, true);
+}
+
+type RecipeType = {
+  recipe: Recipe & {
+    user: User;
+    ingredients: ingredients[];
+    Favorites: Favorites[];
+    instructions: Instruction[];
+  }
+}
+export const recipe: NextPage<RecipeType> = (props) =>
+{
+  const { recipe } = props;
+  const router = useRouter();
+  const { data: session } = useSession();
   return (
     <Card>
       <Image
@@ -14,7 +34,7 @@ export const recipe = () =>
       <CardBody>
         <Card>
           <CardHeader>
-            <Heading size='md'>Pasta Bolognese</Heading>
+            <Heading size='md'>{recipe.name}</Heading>
           </CardHeader>
 
           <CardBody>
@@ -24,7 +44,7 @@ export const recipe = () =>
                   Preparation time:
                 </Heading>
                 <Text pt='2' fontSize='sm'>
-                  60 minutes
+                  {recipe.totalTime} minutes
                 </Text>
               </Box>
               <Box>
@@ -32,7 +52,7 @@ export const recipe = () =>
                   Overview
                 </Heading>
                 <Text pt='2' fontSize='sm'>
-                  Check out the overview of your clients.
+                  {recipe.description}
                 </Text>
               </Box>
               <Box>

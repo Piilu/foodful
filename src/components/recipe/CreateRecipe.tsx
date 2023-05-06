@@ -8,18 +8,25 @@ import axios from 'axios';
 import { EndPoint } from '~/constants/EndPoints';
 import { RecipeReqCreateType, RecipeResCreateType } from '~/pages/api/recipe';
 import { Instruction, ingredients } from '@prisma/client';
+import { FullRecipeData } from '~/constants/types';
+import { getRecipe } from '~/utils/queries/get-recipe';
+import { useRouter } from 'next/router';
 
 type CreateRecipeType = {
     isModal?: boolean;
     isOpen?: boolean;
+    recipeId?: number | null;
     onClose?: () => void;
 }
 const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
 {
-    const { isOpen, onClose, isModal } = props;
+    const { isOpen, onClose, isModal, recipeId } = props;
     const [winReady, setWinReady] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<string[]>([]);
+    const [title, setTitle] = useState<"Add new Recipe" | string>("Add new Recipe");
+    const [currentRecipe, setCurrentRecipe] = useState<FullRecipeData | null>(null);
+    const router = useRouter();
     const toast = useToast();
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const form = useForm({
@@ -39,16 +46,37 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
             totalTime: (value) => (value != null && value != 0 ? null : "Total time is required"),
         },
     });
+
     useEffect(() => { setWinReady(true); }, []);
 
-
+    //It's doing double request to get data (but its okay for now)
     useEffect(() =>
     {
-        form.reset()
+        if (recipeId != null && isOpen && currentRecipe?.id !== recipeId)
+        {
+            queryRecipe();
+        }
+        setTitle(currentRecipe?.name ?? "Add new Recipe");
 
-    }, [isOpen]);
+        form.setValues({
+            name: currentRecipe?.name ?? "",
+            description: currentRecipe?.description ?? "",
+            totalTime: currentRecipe?.totalTime ?? 0,
+            Ingredients: currentRecipe?.ingredients ?? [
+            ],
+            instructions: currentRecipe?.instructions ?? [
+            ],
+        });
 
-    const handleRecipeCreate = async (event: React.FormEvent<HTMLFormElement>) =>
+    }, [isOpen, currentRecipe?.id]);
+
+    const queryRecipe = async () =>
+    {
+        setCurrentRecipe(await getRecipe(recipeId));
+        console.log(form.values);
+    }
+
+    const handleRecipeSubmit = async (event: React.FormEvent<HTMLFormElement>) =>
     {
         event.preventDefault();
         setErrors([]);
@@ -73,39 +101,81 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
             ingredients: IngredientsPriority as ingredients[],
         }
         setLoading(true);
-        await axios.post(`${window.origin}${EndPoint.RECIPE}`, data).then((res) =>
+        if (recipeId === null)
         {
-            const newData = res.data as RecipeResCreateType;
-            if (newData.success)
+
+            await axios.post(`${window.origin}${EndPoint.RECIPE}`, data).then((res) =>
             {
-                toast({
-                    title: "Recipe created",
-                    description: "Recipe was created successfully",
-                    status: "success",
-                    duration: 9000,
-                    isClosable: true,
-                })
-            }
-            else
+                const newData = res.data as RecipeResCreateType;
+                if (newData.success)
+                {
+                    void router.replace(router.asPath, undefined, { scroll: false });
+                    toast({
+                        title: "Recipe created",
+                        description: "Recipe was created successfully",
+                        status: "success",
+                        duration: 9000,
+                        isClosable: true,
+                    })
+                }
+                else
+                {
+                    toast({
+                        title: "Recipe creation failed",
+                        description: newData.error,
+                        status: "error",
+                        duration: 9000,
+                        isClosable: true,
+                    })
+                }
+            }).catch((err) =>
             {
                 toast({
                     title: "Recipe creation failed",
-                    description: newData.error,
+                    description: err.message,
                     status: "error",
                     duration: 9000,
                     isClosable: true,
                 })
-            }
-        }).catch((err) =>
+            }).finally(() => setLoading(false));
+        }
+        else
         {
-            toast({
-                title: "Recipe creation failed",
-                description: err.message,
-                status: "error",
-                duration: 9000,
-                isClosable: true,
-            })
-        }).finally(() => setLoading(false));
+            await axios.put(`${window.origin}${EndPoint.RECIPE}`, data).then((res) =>
+            {
+                const newData = res.data as RecipeResCreateType;
+                if (newData.success)
+                {
+                    void router.replace(router.asPath, undefined, { scroll: false });
+                    toast({
+                        title: `Recipe ${currentRecipe?.recipe?.name ?? ""} updated`,
+                        description: "Recipe was updated successfully",
+                        status: "success",
+                        duration: 9000,
+                        isClosable: true,
+                    })
+                }
+                else
+                {
+                    toast({
+                        title: "Recipe update failed",
+                        description: newData.error,
+                        status: "error",
+                        duration: 9000,
+                        isClosable: true,
+                    })
+                }
+            }).catch((err) =>
+            {
+                toast({
+                    title: "Recipe creation failed",
+                    description: err.message,
+                    status: "error",
+                    duration: 9000,
+                    isClosable: true,
+                })
+            }).finally(() => setLoading(false));
+        }
 
     }
 
@@ -161,9 +231,9 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                 <ModalOverlay />
                 <ModalContent>
                     <ModalCloseButton />
-                    <ModalHeader>Add new Recipe</ModalHeader>
+                    <ModalHeader>{title}</ModalHeader>
                     <ModalBody>
-                        <form id="createRecipe" onSubmit={(e) => handleRecipeCreate(e)}>
+                        <form id="createRecipe" onSubmit={(e) => handleRecipeSubmit(e)}>
                             {errors.length !== 0 ?
                                 <Alert borderRadius={15} status='error'>
                                     <AlertIcon />
@@ -226,7 +296,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                         </form>
                     </ModalBody>
                     <ModalFooter>
-                        <Button form='createRecipe' isLoading={loading} ml={"auto"} size="md" type='submit' colorScheme='green'>Save</Button>
+                        <Button form='createRecipe' isLoading={loading} ml={"auto"} size="md" type='submit' colorScheme='green'>{recipeId === null ? "Add new recipe" : "Update"}</Button>
 
                     </ModalFooter>
                 </ModalContent>
@@ -236,7 +306,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
     else
     {
         return (
-            <form onSubmit={(e) => handleRecipeCreate(e)}>
+            <form onSubmit={(e) => handleRecipeSubmit(e)}>
                 {errors.length !== 0 ?
                     <Alert borderRadius={15} status='error'>
                         <AlertIcon />
@@ -256,7 +326,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                         </Box>
                     </Alert>
                     : null}
-                <Heading mb={5} size='xl'>Add new Recipe</Heading>
+                <Heading mb={5} size='xl'>{title}</Heading>
 
                 <Stack spacing='4'>
                     <FormControl isRequired>

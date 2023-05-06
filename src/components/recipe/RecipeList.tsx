@@ -4,13 +4,16 @@ import axios from 'axios';
 import { EndPoint } from '~/constants/EndPoints';
 import { RecipeReqListType, RecipeResListGetType } from '~/pages/api/recipe/list';
 import { RecipeReqGetType } from '~/pages/api/recipe';
-import { InputGroup, InputLeftElement, Input, Text, Checkbox } from "@chakra-ui/react";
+import { InputGroup, InputLeftElement, Input, Text, Checkbox, useDisclosure } from "@chakra-ui/react";
 import { Recipe as RecipeBackType } from "@prisma/client";
 import { Group, Pagination } from '@mantine/core';
 import { useScrollIntoView, useDebouncedState } from '@mantine/hooks';
 import { Loader } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import { useRouter } from 'next/router';
+import SearchNotFound from '../custom/SearchNotFound';
+import CreateRecipe from './CreateRecipe';
+import { set } from 'zod';
 
 type RecipeListType = {
     limit: number;
@@ -32,9 +35,11 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
     const [favorite, setFavorite] = useState<boolean>(false);
     const router = useRouter();
     const checkRef = useRef<React.LegacyRef<HTMLInputElement> | undefined>();
+    const [openRecipeId, setOpenRecipeId] = useState<number | null>(null);
     const { scrollIntoView, targetRef } = useScrollIntoView<HTMLDivElement>({
         offset: 60,
     });
+    const { isOpen, onOpen, onClose } = useDisclosure();
 
     const handlePageChange = (page: number) =>
     {
@@ -59,6 +64,12 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
         }
     }, [value]);
 
+    const openRecipeModal = (id: number) =>
+    {
+        console.log("OPEN MODAL",id);
+        setOpenRecipeId(id);
+        onOpen();
+    }
     const getRecipes = async () =>
     {
         const data: RecipeReqListType = {
@@ -90,7 +101,7 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
 
     return (
         <>
-
+            <CreateRecipe recipeId={openRecipeId} isOpen={isOpen} isModal onClose={onClose} />
             {search ?
                 <InputGroup mb={5}>
                     <InputLeftElement
@@ -115,9 +126,9 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
             {items?.length !== 0 ? items.map((item) =>
             {
                 return (
-                    <Recipe key={item.id} horizontal recipe={item} userId={item.userId} />
+                    <Recipe openRecipeModal={openRecipeModal} key={item.id} horizontal recipe={item} userId={item.userId} />
                 )
-            }) : <Text align={"center"}> Not found</Text>}
+            }) : <SearchNotFound value="Can't find any recipes" />}
             <Pagination style={{ float: "right" }} mb={10} value={activePage} onChange={handlePageChange} total={pages} />
         </>
     )

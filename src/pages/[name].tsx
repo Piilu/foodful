@@ -34,6 +34,8 @@ import { User } from "@prisma/client";
 import UserCard from "~/components/profile/UserCard";
 import { MediaQuery } from "@mantine/core";
 import EditProfile from "~/components/profile/EditProfile";
+import { IconPlus } from "@tabler/icons-react";
+import CreateRecipe from "~/components/recipe/CreateRecipe";
 
 export async function getServerSideProps(ctx: GetServerSidePropsContext)
 {
@@ -49,12 +51,14 @@ const profile: NextPage<ProfileType> = (props) =>
 {
   const { isProfileUser, profileUser } = props;
   const { data: session } = useSession();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-
+      <CreateRecipe isModal isOpen={isOpen} onClose={onClose} />
       <MediaQuery largerThan={"md"} styles={{ display: "none" }}>
         <Box mb={5}>
           <UserCard isProfileUser={isProfileUser} grow user={profileUser} />
+          <Button mt={2} w={"100%"} colorScheme="green" onClick={onOpen} leftIcon={<IconPlus />}>Add new recipe</Button>
         </Box>
       </MediaQuery>
       <Flex
@@ -72,6 +76,9 @@ const profile: NextPage<ProfileType> = (props) =>
         <MediaQuery smallerThan={"md"} styles={{ display: "none" }}>
           <Box position="sticky" top="1rem">
             <UserCard isProfileUser={isProfileUser} user={profileUser} />
+            {isProfileUser ?
+              <Button mt={2} w={"100%"} colorScheme="green" onClick={onOpen} leftIcon={<IconPlus />}>Add new recipe</Button>
+              : null}
           </Box>
         </MediaQuery>
       </Flex >
