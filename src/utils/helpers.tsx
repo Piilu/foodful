@@ -16,9 +16,9 @@ export const requireAuth = async (ctx: GetServerSidePropsContext, name?: string,
         if (profileUser === null)
         {
             return {
-                redirect: {
-                    destination: "/404",
-                    permanent: false,
+                props: {
+                    session: session,
+                    notFound: true,
                 },
             }
         }

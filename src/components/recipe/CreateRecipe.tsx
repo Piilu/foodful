@@ -1,42 +1,41 @@
-import { Heading, Stack, FormControl, FormLabel, Box, Input, Textarea, InputGroup, IconButton, Button, Modal, FormHelperText, Text, Flex, useToast, Wrap, WrapItem, AlertIcon, Divider, Alert, AlertDescription, AlertTitle, List, ListItem, ListIcon, ModalFooter, ModalHeader, useDisclosure, ModalBody, ModalCloseButton, ModalContent, ModalOverlay } from '@chakra-ui/react'
+import { Heading, Stack, FormControl, FormLabel, Box, Input, Textarea, InputGroup, IconButton, Button, Modal, useToast, AlertIcon, Divider, Alert, AlertDescription, AlertTitle, List, ListItem, ListIcon, ModalFooter, ModalHeader, ModalBody, ModalCloseButton, ModalContent, ModalOverlay } from '@chakra-ui/react'
 import { useForm } from '@mantine/form';
-import { ActionIcon, Center, Group, Grid } from '@mantine/core';
-import { IconPlus, IconX, IconGripVertical, IconSearch } from '@tabler/icons-react'
-import React, { FunctionComponent, useEffect, useState } from 'react'
+import { Center, Grid } from '@mantine/core';
+import { IconPlus, IconX, IconGripVertical } from '@tabler/icons-react'
+import React, { type FunctionComponent, useEffect, useState } from 'react'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import axios from 'axios';
+import axios, { type AxiosError } from 'axios';
 import { EndPoint } from '~/constants/EndPoints';
-import { RecipeReqCreateType, RecipeResCreateType } from '~/pages/api/recipe';
-import { Instruction, ingredients } from '@prisma/client';
-import { FullRecipeData } from '~/constants/types';
-import { getRecipe } from '~/utils/queries/get-recipe';
+import { type RecipeReqCreateType, type RecipeResCreateType } from '~/pages/api/recipe';
+import { type Instruction, type ingredients } from '@prisma/client';
+import { type FullRecipeData } from '~/constants/types';
 import { useRouter } from 'next/router';
+import IngridientsInput from './IngridientsInput';
 
 type CreateRecipeType = {
     isModal?: boolean;
     isOpen?: boolean;
     recipeId?: number | null;
     onClose?: () => void;
+    currentRecipe: FullRecipeData | null;
 }
 const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
 {
-    const { isOpen, onClose, isModal, recipeId } = props;
+    const { isOpen, onClose, isModal, recipeId, currentRecipe } = props;
     const [winReady, setWinReady] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState<string[]>([]);
-    const [title, setTitle] = useState<"Add new Recipe" | string>("Add new Recipe");
-    const [currentRecipe, setCurrentRecipe] = useState<FullRecipeData | null>(null);
+    const [errors, setErrors] = useState<string[] | []>([]);
+    const [title, setTitle] = useState<"Add new Recipe" | string>(currentRecipe?.name ?? "Add new Recipe");
     const router = useRouter();
     const toast = useToast();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const form = useForm({
         initialValues: {
-            name: "",
-            description: "",
-            totalTime: 0,
-            Ingredients: [
+            name: currentRecipe?.name ?? "",
+            description: currentRecipe?.description ?? "",
+            totalTime: currentRecipe?.totalTime ?? 0,
+            Ingredients: currentRecipe?.ingredients ?? [
             ],
-            instructions: [
+            instructions: currentRecipe?.instructions ?? [
             ],
         },
 
@@ -47,34 +46,8 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
         },
     });
 
-    useEffect(() => { setWinReady(true); }, []);
+    useEffect(() => { setWinReady(true); console.log("USEEFFECT TRIGGERED") }, []);
 
-    //It's doing double request to get data (but its okay for now)
-    useEffect(() =>
-    {
-        if (recipeId != null && isOpen && currentRecipe?.id !== recipeId)
-        {
-            queryRecipe();
-        }
-        setTitle(currentRecipe?.name ?? "Add new Recipe");
-
-        form.setValues({
-            name: currentRecipe?.name ?? "",
-            description: currentRecipe?.description ?? "",
-            totalTime: currentRecipe?.totalTime ?? 0,
-            Ingredients: currentRecipe?.ingredients ?? [
-            ],
-            instructions: currentRecipe?.instructions ?? [
-            ],
-        });
-
-    }, [isOpen, currentRecipe?.id]);
-
-    const queryRecipe = async () =>
-    {
-        setCurrentRecipe(await getRecipe(recipeId));
-        console.log(form.values);
-    }
 
     const handleRecipeSubmit = async (event: React.FormEvent<HTMLFormElement>) =>
     {
@@ -84,21 +57,23 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
         {
             const errors = form.validate().errors;
             console.log(errors)
-            const errorList = Object.keys(errors).map((key) => errors[key]);
+            const errorList = Object.keys(errors).map((key) => errors[key]) as string[];
             console.log(errorList);
             setErrors(errorList);
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         const instructionsPriority = form.values.instructions.map((item, index) => ({ ...item, priority: index }));
         const IngredientsPriority = form.values.Ingredients.map((item, index) => ({ ...item, priority: index }));
+
+
         const data: RecipeReqCreateType = {
             name: form.values.name,
             description: form.values.description,
-            totalTime: form.values.totalTime != null ? parseInt(form.values.totalTime) : null,
+            totalTime: form.values.totalTime != null ? parseInt(form.values.totalTime.toString()) : null,
             instructions: instructionsPriority as Instruction[],
             ingredients: IngredientsPriority as ingredients[],
+            recipeId: recipeId ?? null,
         }
         setLoading(true);
         if (recipeId === null)
@@ -110,6 +85,15 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                 if (newData.success)
                 {
                     void router.replace(router.asPath, undefined, { scroll: false });
+                    setTitle(newData?.fullRecipeData?.name ?? "Add new Recipe");
+                    form.setValues({
+                        name: newData?.fullRecipeData?.name as string,
+                        description: newData?.fullRecipeData?.description ?? "",
+                        totalTime: newData?.fullRecipeData?.totalTime ?? 0,
+                        instructions: newData?.fullRecipeData?.instructions,
+                        Ingredients: newData?.fullRecipeData?.ingredients,
+                    })
+                    form.resetDirty();
                     toast({
                         title: "Recipe created",
                         description: "Recipe was created successfully",
@@ -128,7 +112,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                         isClosable: true,
                     })
                 }
-            }).catch((err) =>
+            }).catch((err: Error | AxiosError) =>
             {
                 toast({
                     title: "Recipe creation failed",
@@ -137,7 +121,10 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                     duration: 9000,
                     isClosable: true,
                 })
-            }).finally(() => setLoading(false));
+            }).finally(() =>
+            {
+                setLoading(false);
+            });
         }
         else
         {
@@ -146,14 +133,25 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                 const newData = res.data as RecipeResCreateType;
                 if (newData.success)
                 {
-                    void router.replace(router.asPath, undefined, { scroll: false });
+                    setTitle(newData?.fullRecipeData?.name ?? "Add new Recipe");
+
+                    void router.replace(router.asPath, undefined);
+                    
+                    form.setValues({
+                        name: newData?.fullRecipeData?.name as string,
+                        description: newData?.fullRecipeData?.description ?? "",
+                        totalTime: newData?.fullRecipeData?.totalTime ?? 0,
+                        instructions: newData?.fullRecipeData?.instructions,
+                        Ingredients: newData?.fullRecipeData?.ingredients,
+                    })
                     toast({
-                        title: `Recipe ${currentRecipe?.recipe?.name ?? ""} updated`,
+                        title: `Recipe ${currentRecipe?.name ?? ""} updated`,
                         description: "Recipe was updated successfully",
                         status: "success",
                         duration: 9000,
                         isClosable: true,
                     })
+                    console.log("DIRTY5555555555", form.isDirty());
                 }
                 else
                 {
@@ -165,7 +163,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                         isClosable: true,
                     })
                 }
-            }).catch((err) =>
+            }).catch((err: Error | AxiosError) =>
             {
                 toast({
                     title: "Recipe creation failed",
@@ -179,38 +177,29 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
 
     }
 
-    const ingredients = form.values.Ingredients.map((item, index) => (
-        // eslint-disable-next-line react/jsx-key
-        <Grid key={index} grow>
-            <Divider />
-            <Grid.Col span={3} miw={"15em"}>
-                <FormControl >
-                    <FormLabel>Name</FormLabel>
-                    <Input  {...form.getInputProps(`Ingredients.${index}.name`)} placeholder='Eggs' />
-                </FormControl>
-            </Grid.Col>
-            <Grid.Col span={5} miw={"15em"}>
-                <FormControl>
-                    <FormLabel>Description</FormLabel>
-                    <Input {...form.getInputProps(`Ingredients.${index}.description`)} placeholder='Details' />
-                </FormControl>
-            </Grid.Col>
-            <Grid.Col span={2} miw={"15em"}>
-                <FormControl >
-                    <FormLabel>Amount</FormLabel>
-                    <Input {...form.getInputProps(`Ingredients.${index}.amount`)} placeholder='2tk' />
-                </FormControl></Grid.Col>
-            <Grid.Col span={1} mt={"auto"} miw={"5em"}>
-                <FormControl >
-                    <IconButton w={"100%"} mt={"auto"} aria-label='Remove recipe' onClick={() => form.removeListItem("Ingredients", index)} icon={<IconX />} ></IconButton>
-                </FormControl></Grid.Col>
-        </Grid>
+    const handleRecipeModalClose = () =>
+    {
+        // console.log("DIRTY2", form.isDirty());
+        // if (form.isDirty())
+        // {
+        //     const result = confirm("Are you sure you want to close? All unsaved changes will be lost");
+        //     console.log(result);
+        //     if (result)
+        //     {
+        //         onClose?.();
+        //         form.reset();
+        //         setErrors([]);
+        //     }
+        //     return;
+        // }
+        onClose?.();
+    }
 
-
+    const ingredients = form.values.Ingredients?.map((item, index) => (
+        <IngridientsInput key={`${index}-ingridients`} index={index} form={form} />
     ));
 
-    const instructions = form.values.instructions.map((item, index) => (
-        // eslint-disable-next-line react/jsx-key
+    const instructions = form.values.instructions?.map((item, index) => (
         <Draggable key={index} index={index} draggableId={index.toString()} >
             {(provided) => (
                 <InputGroup mb={2} ref={provided.innerRef} {...provided.draggableProps} gap={5}>
@@ -227,14 +216,14 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
     if (isModal)
     {
         return (
-            <Modal isOpen={isOpen as boolean} onClose={onClose as (() => void)} size='6xl' scrollBehavior={"inside"}>
+            <Modal motionPreset="slideInBottom" isOpen={isOpen as boolean} onClose={handleRecipeModalClose} size='6xl' scrollBehavior={"inside"}>
                 <ModalOverlay />
                 <ModalContent>
                     <ModalCloseButton />
                     <ModalHeader>{title}</ModalHeader>
                     <ModalBody>
-                        <form id="createRecipe" onSubmit={(e) => handleRecipeSubmit(e)}>
-                            {errors.length !== 0 ?
+                        <form id="createRecipe" onSubmit={(e) => void handleRecipeSubmit(e)}>
+                            {errors?.length !== 0 ?
                                 <Alert borderRadius={15} status='error'>
                                     <AlertIcon />
                                     <Box>
@@ -242,7 +231,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                                         <AlertDescription>
 
                                             <List>
-                                                {errors.length !== 0 ? errors.map((error, index) => (
+                                                {errors?.length !== 0 ? errors?.map((error, index) => (
                                                     <ListItem key={index.toString() + "error"}>
                                                         <ListIcon as={IconX} color='red' />
                                                         {error}
@@ -252,7 +241,6 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                                         </AlertDescription>
                                     </Box>
                                 </Alert>
-
                                 : null}
                             <Stack spacing='4'>
                                 <FormControl isRequired>
@@ -276,7 +264,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                                 <small style={{ margin: 0 }}>The order everthing has to be done</small>
                                 <DragDropContext
                                     onDragEnd={({ destination, source }) =>
-                                        form.reorderListItem('instructions', { from: source.index, to: destination?.index })
+                                        form.reorderListItem('instructions', { from: source.index, to: destination?.index ?? 0 })
                                     }
                                 >
                                     <Droppable droppableId="dnd-list" direction="vertical">
@@ -306,8 +294,8 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
     else
     {
         return (
-            <form onSubmit={(e) => handleRecipeSubmit(e)}>
-                {errors.length !== 0 ?
+            <form onSubmit={(e) => void handleRecipeSubmit(e)}>
+                {errors?.length !== 0 ?
                     <Alert borderRadius={15} status='error'>
                         <AlertIcon />
                         <Box>
@@ -315,7 +303,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                             <AlertDescription>
 
                                 <List>
-                                    {errors.length !== 0 ? errors.map((error, index) => (
+                                    {errors?.length !== 0 ? errors?.map((error, index) => (
                                         <ListItem key={index.toString() + "error"}>
                                             <ListIcon as={IconX} color='red' />
                                             {error}
@@ -350,7 +338,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                     <small style={{ margin: 0 }}>The order everthing has to be done</small>
                     <DragDropContext
                         onDragEnd={({ destination, source }) =>
-                            form.reorderListItem('instructions', { from: source.index, to: destination?.index })
+                            form.reorderListItem('instructions', { from: source.index, to: destination?.index ?? 0 })
                         }
                     >
                         <Droppable droppableId="dnd-list" direction="vertical">

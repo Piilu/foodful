@@ -10,6 +10,7 @@ export type RecipeReqListType = {
     take?: number,
     searchName?: string,
     favorite?: boolean,
+    orderCreatedAt?: "asc" | "desc",
 }
 
 export type RecipeResListGetType = {
@@ -27,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 {
     const response = {} as RecipeResListGetType;
     const session = await getSession({ req })
-    const { page, take, searchName, userId, favorite } = req.body as RecipeReqListType;
+    const { page, take, searchName, userId, favorite, orderCreatedAt } = req.body as RecipeReqListType;
     const method = req.method;
 
     try
@@ -41,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     select: { recipe: true },
                     skip: page * take,
                     take: take,
-                    orderBy: { recipe: { createdAt: "asc" } },
+                    orderBy: { recipe: { createdAt: orderCreatedAt } },
                     where: {
                         userId: userId,
                         recipe: {
@@ -73,7 +74,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 const recipes = await prisma.recipe.findMany({
                     skip: page * take,
                     take: take,
-                    orderBy: { createdAt: "asc" },
+                    orderBy: { createdAt: orderCreatedAt },
                     where: {
                         name: { contains: searchName },
                         ...(userId != undefined ? { userId: userId } : {}),

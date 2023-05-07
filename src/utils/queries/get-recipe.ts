@@ -8,5 +8,5 @@ import { UserResType } from "~/pages/api/user";
 export const getRecipe = async (id: number): Promise<FullRecipeData | null> =>
 {
     const response = (await axios.get(`${window.origin}${EndPoint.RECIPE}`, { params: { id: id } })).data as RecipeResCreateType;
-    return response.FullRecipeData;
+    return response.fullRecipeData;
 }

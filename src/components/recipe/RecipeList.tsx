@@ -1,11 +1,11 @@
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react'
+import React, { type FunctionComponent, useEffect, useRef, useState } from 'react'
 import Recipe from '../auth/Recipe'
 import axios from 'axios';
 import { EndPoint } from '~/constants/EndPoints';
-import { RecipeReqListType, RecipeResListGetType } from '~/pages/api/recipe/list';
+import { type RecipeReqListType, type RecipeResListGetType } from '~/pages/api/recipe/list';
 import { RecipeReqGetType } from '~/pages/api/recipe';
 import { InputGroup, InputLeftElement, Input, Text, Checkbox, useDisclosure } from "@chakra-ui/react";
-import { Recipe as RecipeBackType } from "@prisma/client";
+import { type Recipe as RecipeBackType } from "@prisma/client";
 import { Group, Pagination } from '@mantine/core';
 import { useScrollIntoView, useDebouncedState } from '@mantine/hooks';
 import { Loader } from '@mantine/core';
@@ -13,7 +13,8 @@ import { IconSearch } from '@tabler/icons-react';
 import { useRouter } from 'next/router';
 import SearchNotFound from '../custom/SearchNotFound';
 import CreateRecipe from './CreateRecipe';
-import { set } from 'zod';
+import { type FullRecipeData } from '~/constants/types';
+import { getRecipe } from '~/utils/queries/get-recipe';
 
 type RecipeListType = {
     limit: number;
@@ -22,12 +23,13 @@ type RecipeListType = {
     userId?: string;
     showUpperPagination?: boolean;
     showFavorites?: boolean;
+    orderCreatedAt?: "asc" | "desc";
 }
 
-const RecipeList: FunctionComponent<RecipeListType> = (props) =>
+function RecipeList(props: RecipeListType)
 {
     const [items, setItems] = useState<RecipeBackType[] | []>([]);
-    const { limit, page, search, userId, showUpperPagination, showFavorites } = props;
+    const { limit, page, search, userId, showUpperPagination, orderCreatedAt, showFavorites } = props;
     const [pages, setPages] = useState<number>(1);
     const [activePage, setActivePage] = useState<number>(page);
     const [value, setValue] = useDebouncedState<string | undefined>(undefined, 300)
@@ -36,6 +38,7 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
     const router = useRouter();
     const checkRef = useRef<React.LegacyRef<HTMLInputElement> | undefined>();
     const [openRecipeId, setOpenRecipeId] = useState<number | null>(null);
+    const [currentRecipe, setCurrentRecipe] = useState<FullRecipeData | null>(null);
     const { scrollIntoView, targetRef } = useScrollIntoView<HTMLDivElement>({
         offset: 60,
     });
@@ -48,28 +51,28 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
             alignment: 'center',
         })
     }
-    useEffect(() =>
+
+
+    const openRecipeModal = async (id: number) =>
     {
-        if (showFavorites)
-        {
-            router.push({ query: { ...router.query, favorite: checkRef.current.checked } }, undefined, { shallow: true, });
-        }
-        getRecipes();
-    }, [activePage, favorite]);
+        console.log("OPEN MODAL", id);
+        setOpenRecipeId(id);
+        setCurrentRecipe(await getRecipe(id));
+        onOpen();
+    }
+
     useEffect(() =>
     {
         if (value !== undefined)
         {
-            getRecipes();
-        }
-    }, [value]);
+            void getRecipes();
+            console.log("USE EFFECT router", router.query);
 
-    const openRecipeModal = (id: number) =>
-    {
-        console.log("OPEN MODAL",id);
-        setOpenRecipeId(id);
-        onOpen();
-    }
+        }
+        void getRecipes();
+    }, [router,favorite,value]);
+
+
     const getRecipes = async () =>
     {
         const data: RecipeReqListType = {
@@ -77,7 +80,9 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
             take: limit,
             searchName: value,
             userId: userId,
-            favorite: showFavorites ? checkRef.current?.checked : false,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            favorite: showFavorites ? checkRef.current?.checked : false ?? false,
+            orderCreatedAt: orderCreatedAt ?? "desc"
         }
         setLoading(true);
         await axios.post(`${window.origin}/${EndPoint.RECIPELIST}`, data).then((res) =>
@@ -101,7 +106,9 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
 
     return (
         <>
-            <CreateRecipe recipeId={openRecipeId} isOpen={isOpen} isModal onClose={onClose} />
+            {isOpen ?
+                <CreateRecipe currentRecipe={currentRecipe} recipeId={openRecipeId} isOpen={isOpen} isModal onClose={onClose} />
+                : null}
             {search ?
                 <InputGroup mb={5}>
                     <InputLeftElement
@@ -126,6 +133,7 @@ const RecipeList: FunctionComponent<RecipeListType> = (props) =>
             {items?.length !== 0 ? items.map((item) =>
             {
                 return (
+                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
                     <Recipe openRecipeModal={openRecipeModal} key={item.id} horizontal recipe={item} userId={item.userId} />
                 )
             }) : <SearchNotFound value="Can't find any recipes" />}

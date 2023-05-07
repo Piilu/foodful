@@ -45,13 +45,22 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext)
 type ProfileType = {
   isProfileUser: boolean;
   profileUser: User;
+  notFound?: boolean;
 };
 
 const profile: NextPage<ProfileType> = (props) =>
 {
-  const { isProfileUser, profileUser } = props;
+  const { isProfileUser, profileUser, notFound } = props;
   const { data: session } = useSession();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  if (notFound)
+  {
+    return (
+      <Box  mx={"auto"}>
+        <Heading as={"h4"} size="lg" mb={5}>User not found</Heading>
+      </Box>
+    );
+  }
   return (
     <>
       <CreateRecipe isModal isOpen={isOpen} onClose={onClose} />

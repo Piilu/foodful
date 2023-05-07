@@ -34,7 +34,7 @@ const Home: NextPage = () =>
       {/* See saab eraldi komponent olla */}
       <Box style={{ padding: "1em" }}>
         <Text align="center" pb={5} fontSize="4xl" >Search for recipes</Text>
-        <RecipeList search limit={10} page={1} />
+        <RecipeList orderCreatedAt="desc" search limit={10} page={1} />
       </Box>
 
     </>

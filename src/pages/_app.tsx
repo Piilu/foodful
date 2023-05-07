@@ -22,17 +22,17 @@ const MyApp: AppType<{ session: Session | null }> = ({
   const theme = extendTheme(configChakra);
 
   return (
-    <ChakraProvider theme={theme} >
-      <ModalsProvider>
-        <SessionProvider session={session}>
+    <SessionProvider session={session}>
+      <ChakraProvider theme={theme} >
+        <ModalsProvider>
           <NavBar />
           <Container size={"xl"} >
             <Component {...pageProps} />
           </Container>
-        </SessionProvider>
-      </ModalsProvider>
+        </ModalsProvider>
 
-    </ChakraProvider>
+      </ChakraProvider>
+    </SessionProvider>
 
   );
 };
