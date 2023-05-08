@@ -1,4 +1,4 @@
-import { Heading, Stack, FormControl, FormLabel, Box, Input, Textarea, InputGroup, IconButton, Button, Modal, useToast, AlertIcon, Divider, Alert, AlertDescription, AlertTitle, List, ListItem, ListIcon, ModalFooter, ModalHeader, ModalBody, ModalCloseButton, ModalContent, ModalOverlay } from '@chakra-ui/react'
+import { Heading, Stack, FormControl, FormLabel, Box, Input, List, Textarea, InputGroup, IconButton, Button, Modal, useToast, AlertIcon, Divider, Alert, AlertDescription, AlertTitle, ListItem, ListIcon, ModalFooter, ModalHeader, ModalBody, ModalCloseButton, ModalContent, ModalOverlay } from '@chakra-ui/react'
 import { useForm } from '@mantine/form';
 import { Center, Grid } from '@mantine/core';
 import { IconPlus, IconX, IconGripVertical } from '@tabler/icons-react'
@@ -11,6 +11,7 @@ import { type Instruction, type ingredients } from '@prisma/client';
 import { type FullRecipeData } from '~/constants/types';
 import { useRouter } from 'next/router';
 import IngridientsInput from './IngridientsInput';
+import InstructionsInput from './InstructionsInput';
 
 type CreateRecipeType = {
     isModal?: boolean;
@@ -24,6 +25,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
     const { isOpen, onClose, isModal, recipeId, currentRecipe } = props;
     const [winReady, setWinReady] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [custom, setCustom] = useState(false);
     const [errors, setErrors] = useState<string[] | []>([]);
     const [title, setTitle] = useState<"Add new Recipe" | string>(currentRecipe?.name ?? "Add new Recipe");
     const router = useRouter();
@@ -52,6 +54,8 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
     const handleRecipeSubmit = async (event: React.FormEvent<HTMLFormElement>) =>
     {
         event.preventDefault();
+        console.log(form.values.instructions)
+
         setErrors([]);
         if (form.isValid() === false)
         {
@@ -93,6 +97,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                         instructions: newData?.fullRecipeData?.instructions,
                         Ingredients: newData?.fullRecipeData?.ingredients,
                     })
+                    setCustom(true);
                     form.resetDirty();
                     toast({
                         title: "Recipe created",
@@ -121,10 +126,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                     duration: 9000,
                     isClosable: true,
                 })
-            }).finally(() =>
-            {
-                setLoading(false);
-            });
+            })
         }
         else
         {
@@ -136,7 +138,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                     setTitle(newData?.fullRecipeData?.name ?? "Add new Recipe");
 
                     void router.replace(router.asPath, undefined);
-                    
+
                     form.setValues({
                         name: newData?.fullRecipeData?.name as string,
                         description: newData?.fullRecipeData?.description ?? "",
@@ -144,6 +146,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                         instructions: newData?.fullRecipeData?.instructions,
                         Ingredients: newData?.fullRecipeData?.ingredients,
                     })
+                    setCustom(true);
                     toast({
                         title: `Recipe ${currentRecipe?.name ?? ""} updated`,
                         description: "Recipe was updated successfully",
@@ -172,9 +175,10 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                     duration: 9000,
                     isClosable: true,
                 })
-            }).finally(() => setLoading(false));
+            })
         }
 
+        setLoading(false);
     }
 
     const handleRecipeModalClose = () =>
@@ -196,19 +200,13 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
     }
 
     const ingredients = form.values.Ingredients?.map((item, index) => (
-        <IngridientsInput key={`${index}-ingridients`} index={index} form={form} />
+        <IngridientsInput setCustom={setCustom} custom={custom} key={`${index}-ingridients`} index={index} form={form} />
     ));
 
     const instructions = form.values.instructions?.map((item, index) => (
-        <Draggable key={index} index={index} draggableId={index.toString()} >
+        <Draggable key={`${index}-instructions`} index={index} draggableId={index.toString()} >
             {(provided) => (
-                <InputGroup mb={2} ref={provided.innerRef} {...provided.draggableProps} gap={5}>
-                    <Center {...provided.dragHandleProps}>
-                        <IconGripVertical size="1.2rem" />
-                    </Center>
-                    <Input {...form.getInputProps(`instructions.${index}.step`)} placeholder='Step' />
-                    <IconButton aria-label='Remove recipe' onClick={() => form.removeListItem("instructions", index)} icon={<IconX />} ></IconButton>
-                </InputGroup >
+                <InstructionsInput custom={custom} setCustom={setCustom} index={index} form={form} provided={provided} />
             )}
         </Draggable>
     ));

@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Card, CardBody, CardFooter, Button, Heading, Stack, Image, Text, Flex, Box, Icon, Avatar, IconButton, border, MenuButton, Menu, MenuList, MenuItem, Portal, useDisclosure, useColorMode } from '@chakra-ui/react';
+import { Card, CardBody, CardFooter, Button, Heading, Stack, Image, Text, Flex, Box, Icon, Avatar, IconButton, border, MenuButton, Menu, MenuList, MenuItem, Portal, useDisclosure, useColorMode, Divider, Tooltip } from '@chakra-ui/react';
 import { useSession } from 'next-auth/react';
-import { IconClock, IconDotsVertical, IconLicense, IconMessage } from '@tabler/icons-react';
+import { IconBook, IconClock, IconDotsVertical, IconLicense, IconMessage } from '@tabler/icons-react';
 import { ActionIcon, Group, MediaQuery } from '@mantine/core';
 import CreateRecipe from '../recipe/CreateRecipe';
 import { Recipe as RecipePrisma } from '@prisma/client';
@@ -51,20 +51,22 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                             <Flex gap='2' alignItems='center'>
                                 <Heading size='md'>{recipe.name}</Heading>
                                 <Icon boxSize={7} as={IconClock} color='green' />
-                                <Text>60 min</Text>
+                                <Text>{recipe.totalTime}</Text>
                                 {isOwner ?
                                     <MediaQuery largerThan={"xs"} styles={{ display: "none" }}>
-                                        <Menu>
-                                            <MenuButton as={ActionIcon}>
-                                                <IconDotsVertical />
-                                            </MenuButton>
-                                            <Portal>
-                                                <MenuList>
-                                                    <MenuItem onClick={() => void openRecipeModal?.(recipe.id)}>Edit</MenuItem>
-                                                    <MenuItem color={"red"}>Delete</MenuItem>
-                                                </MenuList>
-                                            </Portal>
-                                        </Menu>
+                                        <div>
+                                            <Menu>
+                                                <MenuButton as={ActionIcon}>
+                                                    <IconDotsVertical />
+                                                </MenuButton>
+                                                <Portal>
+                                                    <MenuList>
+                                                        <MenuItem onClick={() => void openRecipeModal?.(recipe.id)}>Edit</MenuItem>
+                                                        <MenuItem color={"red"}>Delete</MenuItem>
+                                                    </MenuList>
+                                                </Portal>
+                                            </Menu>
+                                        </div>
                                     </MediaQuery>
                                     : null}
                             </Flex>
@@ -74,7 +76,7 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                             <Button flex='2' variant='ghost' leftIcon={<IconMessage />}>
                             </Button>
                             <Button variant='ghost' leftIcon={<IconLicense />}>
-                                Yum! 5
+                                Yum! {recipe.favoriteCount}
                             </Button>
                         </CardBody>
                     </Stack>
@@ -83,22 +85,27 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                     <Flex direction={"column"} style={{ marginLeft: "auto" }}>
                         <CardBody>
                             {isOwner ?
-                                <Menu>
-                                    <MenuButton as={ActionIcon} ml={"auto"}>
-                                        <IconDotsVertical />
-                                    </MenuButton>
-                                    <Portal>
-                                        <MenuList>
-                                            <MenuItem onClick={() => void openRecipeModal?.(recipe.id)}>Edit</MenuItem>
-                                            <MenuItem color={"red"}>Delete</MenuItem>
-                                        </MenuList>
-                                    </Portal>
-                                </Menu>
+                                <MediaQuery smallerThan={"xs"} styles={{ display: "none" }}>
+                                    <div>
+                                        <Menu>
+                                            <MenuButton as={ActionIcon} ml={"auto"}>
+                                                <IconDotsVertical />
+                                            </MenuButton>
+                                            <Portal>
+                                                <MenuList>
+                                                    <MenuItem onClick={() => void openRecipeModal?.(recipe.id)}>Edit</MenuItem>
+                                                    <MenuItem color={"red"}>Delete</MenuItem>
+                                                </MenuList>
+                                            </Portal>
+                                        </Menu>
+                                    </div>
+                                </MediaQuery>
                                 : null}
                         </CardBody>
                         <CardBody>
 
-                            <Button onClick={openRecipeView} colorScheme='green'>Open</Button>
+                            <Button onClick={openRecipeView} w={"100%"} colorScheme="orange">View Recipe</Button>
+
                         </CardBody>
                     </Flex>
                 </MediaQuery>
@@ -117,26 +124,57 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                         borderRadius='lg'
                     />
                     <CardBody>
-                        <Stack spacing='2'>
-                            <Flex flex='1' gap='2' alignItems='center' flexWrap='wrap'>
-                                <Icon boxSize={7} as={IconClock} color='green' />
-                                <Text>60 min</Text>
-                            </Flex>
-                            {/* <Heading size='md'>{recipe.name}</Heading> */}
-                            <Text>
-                                {recipe.description}
+                        <Stack spacing='1'>
+                            <Group>
+
+                                <Heading size='md'>{recipe.name}</Heading>
+                                {isOwner ?
+                                    <div>
+                                        <Menu>
+                                            <MenuButton as={ActionIcon} ml={"auto"}>
+                                                <IconDotsVertical />
+                                            </MenuButton>
+                                            <Portal>
+                                                <MenuList>
+                                                    <MenuItem onClick={() => void openRecipeModal?.(recipe.id)}>Edit</MenuItem>
+                                                    <MenuItem color={"red"}>Delete</MenuItem>
+                                                </MenuList>
+                                            </Portal>
+                                        </Menu>
+                                    </div>
+                                    : null}
+                            </Group>
+                            <Text color='gray.500' fontSize='sm'>
+                                {recipe.createdAt}
                             </Text>
-                            <Text>
-                                {/* {recipe.guidelines} */}
+                            <Divider />
+                            <Group position="left" opacity={0.7}>
+                                <Tooltip label="Total Time" placement="top">
+
+                                    <Flex gap={1}>
+                                        <IconClock size={18} color='green' />
+                                        <Text fontSize={12} as={"b"}>60 min</Text>
+                                    </Flex>
+                                </Tooltip>
+                                <Tooltip label="Total Ingridients" placement='top'>
+                                    <Flex gap={1}>
+                                        <IconBook size={18} color='orange' />
+                                        <Text fontSize={12} as={"b"}>5</Text>
+                                    </Flex>
+                                </Tooltip>
+                            </Group>
+                            <Text >
+                                {recipe.description}
                             </Text>
                         </Stack>
                     </CardBody>
                     <CardFooter>
-                        <Button flex='2' variant='ghost' leftIcon={<IconLicense />}>
+                        {/* <Button flex='2' variant='ghost' leftIcon={<IconLicense />}>
                             Yum! 5
                         </Button>
                         <Button flex='2' variant='ghost' leftIcon={<IconMessage />}>
-                        </Button>
+                        </Button> */}
+                        <Button w={"100%"} colorScheme="orange">View Recipe</Button>
                     </CardFooter>
                 </Card>
             </>
