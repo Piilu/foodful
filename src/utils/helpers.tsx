@@ -60,6 +60,8 @@ export const requireAuth = async (ctx: GetServerSidePropsContext, name?: string,
             }
         })
 
+        const isRecipeOwner = recipe?.user?.id === session?.user?.id;
+
         if (recipe === null)
         {
             return {
@@ -75,6 +77,7 @@ export const requireAuth = async (ctx: GetServerSidePropsContext, name?: string,
                 props: {
                     session: session,
                     recipe: recipe,
+                    isRecipeOwner: isRecipeOwner,
                 },
             }
         }

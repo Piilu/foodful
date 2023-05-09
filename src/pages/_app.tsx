@@ -26,7 +26,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
       <ChakraProvider theme={theme} >
         <ModalsProvider>
           <NavBar />
-          <Container size={"xl"} >
+          <Container size={"xl"} style={{border:"solid 1px red"}} >
             <Component {...pageProps} />
           </Container>
         </ModalsProvider>

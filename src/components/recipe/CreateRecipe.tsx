@@ -6,7 +6,7 @@ import React, { type FunctionComponent, useEffect, useState } from 'react'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import axios, { type AxiosError } from 'axios';
 import { EndPoint } from '~/constants/EndPoints';
-import { type RecipeReqCreateType, type RecipeResCreateType } from '~/pages/api/recipe';
+import { type RecipeReqCreateType, type RecipeResCreateType } from '~/pages/recipe/recipe';
 import { type Instruction, type ingredients } from '@prisma/client';
 import { type FullRecipeData } from '~/constants/types';
 import { useRouter } from 'next/router';
@@ -48,8 +48,22 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
         },
     });
 
-    useEffect(() => { setWinReady(true); console.log("USEEFFECT TRIGGERED") }, []);
 
+    //#region Setup custom components for
+    const ingredients = form.values.Ingredients?.map((item, index) => (
+        <IngridientsInput setCustom={setCustom} custom={custom} key={`${index}-ingridients`} index={index} form={form} />
+    ));
+
+    const instructions = form.values.instructions?.map((item, index) => (
+        <Draggable key={`${index}-instructions`} index={index} draggableId={index.toString()} >
+            {(provided) => (
+                <InstructionsInput custom={custom} setCustom={setCustom} index={index} form={form} provided={provided} />
+            )}
+        </Draggable>
+    ));
+    //#endregion
+
+    useEffect(() => { setWinReady(true); }, []);
 
     const handleRecipeSubmit = async (event: React.FormEvent<HTMLFormElement>) =>
     {
@@ -82,7 +96,6 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
         setLoading(true);
         if (recipeId === null)
         {
-
             await axios.post(`${window.origin}${EndPoint.RECIPE}`, data).then((res) =>
             {
                 const newData = res.data as RecipeResCreateType;
@@ -199,17 +212,6 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
         onClose?.();
     }
 
-    const ingredients = form.values.Ingredients?.map((item, index) => (
-        <IngridientsInput setCustom={setCustom} custom={custom} key={`${index}-ingridients`} index={index} form={form} />
-    ));
-
-    const instructions = form.values.instructions?.map((item, index) => (
-        <Draggable key={`${index}-instructions`} index={index} draggableId={index.toString()} >
-            {(provided) => (
-                <InstructionsInput custom={custom} setCustom={setCustom} index={index} form={form} provided={provided} />
-            )}
-        </Draggable>
-    ));
 
     if (isModal)
     {
@@ -283,7 +285,6 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                     </ModalBody>
                     <ModalFooter>
                         <Button form='createRecipe' isLoading={loading} ml={"auto"} size="md" type='submit' colorScheme='green'>{recipeId === null ? "Add new recipe" : "Update"}</Button>
-
                     </ModalFooter>
                 </ModalContent>
             </Modal >
@@ -353,7 +354,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
 
                 </Stack>
                 <Stack spacing='4' mt={5}>
-                    <Button isLoading={loading} ml={"auto"} size="md" type='submit' colorScheme='green'>Save</Button>
+                    <Button form='createRecipe' isLoading={loading} ml={"auto"} size="md" type='submit' colorScheme='green'>{recipeId === null ? "Add new recipe" : "Update"}</Button>
                 </Stack>
             </form>
         )

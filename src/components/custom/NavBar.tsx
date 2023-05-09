@@ -1,43 +1,37 @@
-import React, { FunctionComponent, ReactNode } from 'react'
-import { Brands, LinkType } from '~/constants/types';
+import React, { } from 'react'
+import { type LinkType } from '~/constants/types';
 import
 {
-  Avatar,
   Image,
   Box,
   Button,
-  Tooltip,
-  ButtonGroup,
   Flex,
   HStack,
-  IconButton,
   Text,
   Menu,
-  MenuButton,
   MenuDivider,
   MenuItem,
   MenuList,
   Stack,
-  useBreakpointValue,
   useColorModeValue,
   useDisclosure,
 } from '@chakra-ui/react'
-import { IconMenu, IconMenu2, IconX, IconLogout, IconLogin, IconStarFilled, IconSettings, IconLicense } from '@tabler/icons-react';
+import { IconMenu2, IconX, IconLogout, IconLicense, IconBrandGoogle } from '@tabler/icons-react';
 import Link from 'next/link';
 import NavLink from './NavLink';
 import { ActionIcon, MediaQuery, Container } from '@mantine/core';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import UserMenuButton from './UserMenuButton';
 import ToggleColorMode from './ToggleColorMode';
-import EditProfile from '../profile/EditProfile';
 import { modals } from '@mantine/modals';
+import { useRouter } from 'next/router';
 const Links: LinkType[] = [{ label: 'My recipes', link: "", isProfile: true }];
 
 const NavBar = () =>
 {
   const { data: session } = useSession();
-  const isDesktop = useBreakpointValue({ base: false, lg: true })
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const router = useRouter();
   const handleSignOut = () =>
   {
     modals.openConfirmModal({
@@ -52,7 +46,7 @@ const NavBar = () =>
     });
   }
   return (
-    <Box bg={useColorModeValue('gray.100', 'gray.900')} mb={10} px={50}>
+    <Box bg={useColorModeValue('gray.100', 'gray.900')} mb={5} >
       <Container size={"xl"}>
         {/* <EditProfile isModal  /> */}
         <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
@@ -90,14 +84,11 @@ const NavBar = () =>
               <Menu>
                 <UserMenuButton />
                 <MenuList>
-                  {/* <MenuItem icon={<IconSettings />}>Settings</MenuItem> */}
-                  <MenuItem icon={<IconLicense />}>Favorites</MenuItem>
-                  <MenuDivider />
                   <MenuItem icon={<IconLogout />} onClick={() => handleSignOut()}> Logout</MenuItem>
                 </MenuList>
               </Menu>
 
-              : <Button size="md" colorScheme='green' onClick={(e) => { e.preventDefault(); signIn() }}>Login</Button>}
+              : <Button size="md" colorScheme='green' size={"md"} leftIcon={<IconBrandGoogle />} onClick={(e) => { e.preventDefault(); void signIn("google") }}>Login</Button>}
           </Flex>
         </Flex>
 
@@ -111,7 +102,7 @@ const NavBar = () =>
           </Box>
         ) : null : null}
       </Container>
-    </Box>
+    </Box >
   )
 }
 export default NavBar;

@@ -1,9 +1,10 @@
-import { NextApiRequest, NextApiResponse } from "next/types";
+import { type NextApiRequest, type NextApiResponse } from "next/types";
+import { type FullRecipeData } from "~/constants/types";
 import { prisma } from "~/server/db";
 
 export type PopularResType = {
     success: boolean;
-    recipes?: Recipe[];
+    recipes?: FullRecipeData[];
     error?: string;
 }
 export default async function handler(req: NextApiRequest, res: NextApiResponse)
@@ -18,6 +19,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             take: 3,
             orderBy: {
                 createdAt: "desc"
+            },
+            include: {
+                ingredients: true,
+                instructions: true,
+                user: true,
+                Favorites: true,
             }
         });
         response.success = true;

@@ -1,4 +1,4 @@
-import { Recipe, Favorites, Instruction, ingredients, User } from "@prisma/client";
+import { type Recipe, type Favorites, type Instruction, type ingredients, type User } from "@prisma/client";
 
 export enum Brands
 {
@@ -15,4 +15,5 @@ export type FullRecipeData = (Recipe & {
     ingredients: ingredients[];
     Favorites: Favorites[];
     instructions: Instruction[];
+    user: User;
 }) | null

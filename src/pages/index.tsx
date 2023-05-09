@@ -1,17 +1,8 @@
-import styles from "./index.module.css";
-import { GetServerSidePropsContext, type NextPage } from "next";
-import Head from "next/head";
-import Link from "next/link";
-import { ExampleReqType, ExampleResType } from "./api/example";
-import axios from "axios";
-import { EndPoint } from "~/constants/EndPoints";
-import { Box, Button, Container, Flex, Input, InputGroup, InputLeftElement, Text } from "@chakra-ui/react";
+import { type GetServerSidePropsContext, type NextPage } from "next";
+import { Box, Text } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
-import { authOptions, getServerAuthSession } from "~/server/auth";
 import { requireAuth } from "~/utils/helpers";
-import Recipe from "~/components/auth/Recipe";
-import { Group, MediaQuery } from "@mantine/core"
-import { IconSearch } from "@tabler/icons-react"
+import { Group } from "@mantine/core"
 import RecipeList from "~/components/recipe/RecipeList";
 import PopularRecipes from "~/components/custom/PopularRecipes";
 

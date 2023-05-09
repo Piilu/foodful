@@ -1,6 +1,7 @@
 import { User } from "@prisma/client";
 import { getSession } from "next-auth/react";
 import { NextApiRequest, NextApiResponse } from "next/types";
+import { getServerAuthSession } from "~/server/auth";
 import { prisma } from "~/server/db";
 
 export type UserReqType = {
@@ -20,7 +21,7 @@ export type UserResType = {
 export default async function handler(req: NextApiRequest, res: NextApiResponse)
 {
     const { name, website, image, bio } = req.body as UserReqType;
-    const session = await getSession({ req })
+    const session = await getServerAuthSession({ req, res })
     const response = {} as UserResType;
     const method = req.method;
     try

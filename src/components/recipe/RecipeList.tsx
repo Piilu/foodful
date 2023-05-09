@@ -1,10 +1,9 @@
-import React, { type FunctionComponent, useEffect, useRef, useState } from 'react'
-import Recipe from '../auth/Recipe'
+import React, { useEffect, useRef, useState } from 'react'
+import Recipe from './Recipe'
 import axios from 'axios';
 import { EndPoint } from '~/constants/EndPoints';
-import { type RecipeReqListType, type RecipeResListGetType } from '~/pages/api/recipe/list';
-import { RecipeReqGetType } from '~/pages/api/recipe';
-import { InputGroup, InputLeftElement, Input, Text, Checkbox, useDisclosure } from "@chakra-ui/react";
+import { type RecipeReqListType, type RecipeResListGetType } from '~/pages/recipe/recipe/list';
+import { InputGroup, InputLeftElement, Input, Checkbox, useDisclosure, Box } from "@chakra-ui/react";
 import { type Recipe as RecipeBackType } from "@prisma/client";
 import { Group, Pagination } from '@mantine/core';
 import { useScrollIntoView, useDebouncedState } from '@mantine/hooks';
@@ -14,7 +13,6 @@ import { useRouter } from 'next/router';
 import SearchNotFound from '../custom/SearchNotFound';
 import CreateRecipe from './CreateRecipe';
 import { type FullRecipeData } from '~/constants/types';
-import { getRecipe } from '~/utils/queries/get-recipe';
 
 type RecipeListType = {
     limit: number;
@@ -57,20 +55,27 @@ function RecipeList(props: RecipeListType)
     {
         console.log("OPEN MODAL", id);
         setOpenRecipeId(id);
-        setCurrentRecipe(await getRecipe(id));
+        // setCurrentRecipe(await getRecipe(id));
+        setCurrentRecipe(items?.find((item) => item.id === id));
         onOpen();
     }
+    useEffect(() =>
+    {
+        if (showFavorites)
+        {
+            void router.push({ query: { ...router.query, favorite: checkRef.current.checked } }, undefined, { shallow: true, });
+        }
+        void getRecipes();
+    }, [activePage, favorite]);
 
     useEffect(() =>
     {
         if (value !== undefined)
         {
             void getRecipes();
-            console.log("USE EFFECT router", router.query);
-
         }
         void getRecipes();
-    }, [router,favorite,value]);
+    }, [router, value]);
 
 
     const getRecipes = async () =>
@@ -105,7 +110,7 @@ function RecipeList(props: RecipeListType)
     };
 
     return (
-        <>
+        <Box pb={10}>
             {isOpen ?
                 <CreateRecipe currentRecipe={currentRecipe} recipeId={openRecipeId} isOpen={isOpen} isModal onClose={onClose} />
                 : null}
@@ -137,8 +142,8 @@ function RecipeList(props: RecipeListType)
                     <Recipe openRecipeModal={openRecipeModal} key={item.id} horizontal recipe={item} userId={item.userId} />
                 )
             }) : <SearchNotFound value="Can't find any recipes" />}
-            <Pagination style={{ float: "right" }} mb={10} value={activePage} onChange={handlePageChange} total={pages} />
-        </>
+            <Pagination style={{ float: "right" }} value={activePage} onChange={handlePageChange} total={pages} />
+        </Box>
     )
 }
 

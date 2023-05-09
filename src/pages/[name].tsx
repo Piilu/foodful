@@ -1,39 +1,19 @@
-import { useRouter } from "next/router";
 import React from "react";
 import
 {
-  Card,
-  CardBody,
-  CardFooter,
-  Container,
-  Stack,
   Heading,
-  Text,
-  ButtonGroup,
   Button,
-  UnorderedList,
-  Grid,
-  GridItem,
   Flex,
-  Avatar,
   Box,
-  Center,
   useDisclosure,
-  TabList,
-  TabPanels,
-  TabPanel,
-  Tab,
-  Tabs,
 } from "@chakra-ui/react";
-import Recipe from "~/components/auth/Recipe";
 import RecipeList from "~/components/recipe/RecipeList";
 import { requireAuth } from "~/utils/helpers";
-import { GetServerSidePropsContext, NextPage } from "next/types";
+import { type GetServerSidePropsContext, type NextPage } from "next/types";
 import { useSession } from "next-auth/react";
-import { User } from "@prisma/client";
+import { type User } from "@prisma/client";
 import UserCard from "~/components/profile/UserCard";
 import { MediaQuery } from "@mantine/core";
-import EditProfile from "~/components/profile/EditProfile";
 import { IconPlus } from "@tabler/icons-react";
 import CreateRecipe from "~/components/recipe/CreateRecipe";
 
@@ -51,19 +31,23 @@ type ProfileType = {
 const profile: NextPage<ProfileType> = (props) =>
 {
   const { isProfileUser, profileUser, notFound } = props;
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { data: session } = useSession();
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { isOpen, onOpen, onClose } = useDisclosure();
   if (notFound)
   {
     return (
-      <Box  mx={"auto"}>
+      <Box mx={"auto"}>
         <Heading as={"h4"} size="lg" mb={5}>User not found</Heading>
       </Box>
     );
   }
   return (
     <>
-      <CreateRecipe isModal isOpen={isOpen} onClose={onClose} />
+      {isOpen ?
+        <CreateRecipe recipeId={null} isModal isOpen={isOpen} onClose={onClose} currentRecipe={null} />
+        : null}
       <MediaQuery largerThan={"md"} styles={{ display: "none" }}>
         <Box mb={5}>
           <UserCard isProfileUser={isProfileUser} grow user={profileUser} />

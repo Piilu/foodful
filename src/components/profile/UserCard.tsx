@@ -9,16 +9,18 @@ import PromoLink from './PromoLink'
 import EditProfile from './EditProfile'
 import { getUserCount } from '~/utils/queries/get-user-count'
 import { UserCountResType } from '~/pages/api/user/count'
+import Link from 'next/link'
 
 type UserCardType = {
     user: User,
     grow?: boolean,
     isProfileUser: boolean,
+    isPopover?: boolean,
 }
 
 const UserCard: FunctionComponent<UserCardType> = (props) =>
 {
-    const { user, grow, isProfileUser } = props;
+    const { user, grow, isProfileUser, isPopover } = props;
     const [recipeCount, setRecipeCount] = useState<number>()
     const [favorites, setFavorites] = useState<number>()
     const { isOpen, onOpen, onClose } = useDisclosure()
@@ -28,14 +30,14 @@ const UserCard: FunctionComponent<UserCardType> = (props) =>
     }, [])
     const getCount = async () =>
     {
-        const data: UserCountResType = await getUserCount(user.id);
+        const data: UserCountResType = await getUserCount(user.id) as UserCountResType;
         setRecipeCount(data.recipes)
         setFavorites(data.favorites)
     }
     return (
         <>
             <EditProfile user={user} isModal isOpen={isOpen} onClose={onClose} />
-            <Card w={grow ? "100%" : "md"}>
+            <Card border={"none"} w={grow ? "100%" : "md"}>
                 <CardBody>
                     <Stack spacing="3">
                         <Flex direction={"column"}>
@@ -43,19 +45,22 @@ const UserCard: FunctionComponent<UserCardType> = (props) =>
                                 <Box >
                                     <Avatar
                                         size="lg"
-                                        name={user.name}
-                                        src={user.image}
+                                        name={user?.name}
+                                        src={user?.image}
                                     />
                                 </Box>
                                 <Flex flexWrap="nowrap" gap={5} >
                                     <Flex gap={4} direction={"column"}>
                                         <Heading size="md">
                                             <Group noWrap>
-                                                {user.name}
+                                                {isPopover ? <Link style={{ textDecoration: "underline" }} href={`/${user.name}`}>{user.name}</Link> : user.name}
+
                                                 {isProfileUser ?
-                                                    <ActionIcon onClick={onOpen}>
-                                                        <IconEdit size={20} />
-                                                    </ActionIcon>
+                                                    !isPopover ?
+                                                        <ActionIcon onClick={onOpen}>
+                                                            <IconEdit size={20} />
+                                                        </ActionIcon>
+                                                        : null
                                                     : null}
                                             </Group>
                                         </Heading>
@@ -72,16 +77,6 @@ const UserCard: FunctionComponent<UserCardType> = (props) =>
 
                     </Stack>
                 </CardBody>
-                {/* <CardFooter>
-                <ButtonGroup mx="auto" spacing="2">
-                    <Button size="sm" colorScheme="green">
-                        Retseptid
-                    </Button>
-                    <Button size="sm" colorScheme="green">
-                        Lemmikud
-                    </Button>
-                </ButtonGroup>
-            </CardFooter> */}
             </Card >
         </>
     )

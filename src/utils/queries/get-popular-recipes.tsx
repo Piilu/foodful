@@ -1,11 +1,10 @@
-import { Recipe, User } from "@prisma/client";
 import axios from "axios";
 import { EndPoint } from "~/constants/EndPoints";
-import { PopularResType } from "~/pages/api/recipe/popular";
-import { UserResType } from "~/pages/api/user";
+import { type FullRecipeData } from "~/constants/types";
+import { type PopularResType } from "~/pages/recipe/recipe/popular";
 
-export const getPopularRecipes = async (id: string): Promise<Recipe[] | null> =>
+export const getPopularRecipes = async (id: string): Promise<FullRecipeData[] | null> =>
 {
     const response = (await axios.get(`${window.origin}${EndPoint.POPULARRECIPE}`)).data as PopularResType;
-    return response.recipes as Recipe[];
+    return response.recipes as FullRecipeData[];
 }

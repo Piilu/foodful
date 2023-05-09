@@ -1,8 +1,6 @@
-import { Favorites, Instruction, Recipe, ingredients } from "@prisma/client";
-import { NextApiRequest, NextApiResponse } from "next";
-import { getSession } from "next-auth/react";
-import { unknown } from "zod";
-import { FullRecipeData } from "~/constants/types";
+import { type Instruction, type ingredients } from "@prisma/client";
+import { type NextApiRequest, type NextApiResponse } from "next";
+import { type FullRecipeData } from "~/constants/types";
 import { getServerAuthSession } from "~/server/auth";
 import { prisma } from "~/server/db";
 
@@ -40,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const { id } = req.query as unknown as RecipeReqGetType
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const recipe = await prisma.recipe.findUnique({
-                include: { ingredients: { orderBy: { priority: "asc" } }, instructions: { orderBy: { priority: "asc" } }, Favorites: true, },
+                include: { ingredients: { orderBy: { priority: "asc" } }, instructions: { orderBy: { priority: "asc" } }, Favorites: true, user: true },
                 where: {
                     id: parseInt(id),
                 },
@@ -61,6 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     ingredients: true,
                     instructions: true,
                     Favorites: true,
+                    user: true,
                 },
                 data: {
                     userId: session?.user.id,
@@ -110,6 +109,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     ingredients: true,
                     instructions: true,
                     Favorites: true,
+                    user: true,
                 },
                 where: {
                     id: recipeId,

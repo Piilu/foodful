@@ -1,13 +1,12 @@
-import React, { FunctionComponent } from 'react'
-import ToggleColorMode from '../custom/ToggleColorMode';
-import { Group, Text } from '@mantine/core';
-import { Card, Flex } from '@chakra-ui/react';
+import React, { type FunctionComponent } from 'react'
+import { Text } from '@mantine/core';
+import { Flex } from '@chakra-ui/react';
 
 type StatTextType = {
     value?: number,
     label: string,
 }
-const StatText: FunctionComponent<StatCardType> = (props) =>
+const StatText: FunctionComponent<StatTextType> = (props) =>
 {
     const { value, label } = props;
     return (

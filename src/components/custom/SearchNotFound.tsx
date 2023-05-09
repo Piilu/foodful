@@ -1,6 +1,6 @@
-import React, { FunctionComponent } from 'react'
+import React, { type FunctionComponent } from 'react'
 import { Group, Text } from '@mantine/core'
-import { IconLicenseOff, IconSearchOff } from '@tabler/icons-react'
+import { IconLicenseOff } from '@tabler/icons-react'
 
 type SearchNotFoundType = {
     value: string
