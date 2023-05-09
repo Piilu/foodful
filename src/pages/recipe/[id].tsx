@@ -1,14 +1,15 @@
-import { Card, Container, CardHeader, Box, Heading, Text, Image, CardBody, List, CardFooter, Button, Stack, StackDivider, AspectRatio, Divider, Tooltip, Flex, Switch, FormLabel, FormControl, ListItem, SimpleGrid } from '@chakra-ui/react';
+import { Card, Container, CardHeader, Box, Heading, Text, Image, CardBody, List, CardFooter, Button, Stack, StackDivider, AspectRatio, Divider, Tooltip, Flex, Switch, FormLabel, FormControl, ListItem, SimpleGrid, TableContainer, Table, Thead, Tr, Th, Tbody, Td, background, OrderedList, useDisclosure } from '@chakra-ui/react';
 import { ActionIcon, Group } from '@mantine/core';
 import { Favorites, Instruction, Recipe, User, ingredients } from '@prisma/client';
-import { IconClock, IconBook, IconBook2, IconLicense } from '@tabler/icons-react';
+import { IconClock, IconBook, IconBook2, IconLicense, IconEdit } from '@tabler/icons-react';
 import { GetServerSidePropsContext, NextPage } from 'next';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import prettyMilliseconds from 'pretty-ms';
-import React from 'react'
+import React, { use } from 'react'
 import Moment from 'react-moment';
 import UserAvatar from '~/components/profile/UserAvatar';
+import CreateRecipe from '~/components/recipe/CreateRecipe';
 import { requireAuth } from '~/utils/helpers';
 export async function getServerSideProps(ctx: GetServerSidePropsContext)
 {
@@ -29,8 +30,12 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
   const { recipe, isRecipeOwner } = props;
   const router = useRouter();
   const { data: session } = useSession();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   return (
-    <Card minW={"md"} >
+    <Card mb={10} >
+      {isOpen ?
+        <CreateRecipe onClose={onClose} isOpen={isOpen} recipeId={recipe.id} currentRecipe={recipe} isModal />
+        : null}
       <AspectRatio ratio={16 / 5}>
         <Image
           objectFit={"cover"}
@@ -44,17 +49,20 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
           <Group position='apart'>
             <Heading size='lg'>{recipe.name}</Heading>
             <Group>
-              <Tooltip label='Favorite'>
+              <Tooltip openDelay={500} label='Favorite'>
                 <ActionIcon color={recipe.Favorites.some((favorite) => favorite.userId == session?.user.id) ? "orange" : "gray"}>
                   <IconLicense />
                 </ActionIcon>
               </Tooltip>
-              <Flex align={"center"}>
-                <FormLabel fontSize={"sm"} htmlFor='edit-recipe' mb='0'>
-                  Edit
-                </FormLabel>
-                <Switch colorScheme='green' size={"sm"} id='edit-recipe' />
-              </Flex>
+              {isRecipeOwner ?
+                <Flex align={"center"}>
+                  <Tooltip openDelay={500} label="Edit">
+                    <ActionIcon onClick={onOpen} >
+                      <IconEdit />
+                    </ActionIcon>
+                  </Tooltip>
+                </Flex>
+                : null}
             </Group>
           </Group>
           <Group mt={5}>
@@ -82,7 +90,7 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
             <Heading size='xs' textTransform='uppercase'>
               <Flex align={"center"} gap={2}>
                 <IconClock />
-                Preparation time:
+                Total Time:
               </Flex>
             </Heading>
             <Text pt='2' fontSize='sm'>
@@ -91,25 +99,54 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
           </Box>
           <Box>
             <Heading size='xs' textTransform='uppercase'>
-              Ingredients:
+              Ingredients ({recipe.ingredients.length}):
             </Heading>
-            <List>
-              <SimpleGrid columns={[2, null, 3]} spacing={10}>
+            <TableContainer shadow={"md"} mt={3} >
+              <Table variant="simple" colorScheme="whiteAlpha" size='sm'>
 
-                {recipe?.ingredients?.length !== 0 ? recipe.ingredients.map((ingredient) =>
-                {
-                  return (
-                    <ListItem key={`${ingredient.id}-recipe-ingridient`}>
-                      <Text pt='2' fontSize='sm'>
-                        {ingredient.name}
-                      </Text>
+                <Thead>
+                  <Tr>
+                    <Th>Name</Th>
+                    <Th >Amount</Th>
+                    <Th isNumeric title='Some information about that ingredient'>Infromation</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+
+                  {recipe?.ingredients?.length !== 0 ? recipe.ingredients.map((ingredient, index) =>
+                  {
+                    return (
+                      <Tr opacity={0.5} key={`${index}-ingredients-${ingredient.id}`} _hover={{
+                        opacity: 1,
+                      }}>
+                        <Td>{ingredient.name}</Td>
+                        <Td > {ingredient.amount}</Td>
+                        <Td isNumeric >{ingredient.description}</Td>
+                      </Tr>
+                    )
+                  }) : <Text pt='2' fontSize='sm'>No ingredients</Text>}
+                </Tbody>
+
+              </Table>
+            </TableContainer>
+          </Box>
+
+          <Box>
+            <Heading size='xs' textTransform='uppercase'>
+              Instructions ({recipe?.instructions?.length}):
+            </Heading>
+            <OrderedList mt={3} spacing={3}>
+              {recipe?.instructions?.length !== 0 ? recipe.instructions.map((instruction, index) =>
+              {
+                return (
+                  <>
+                    <ListItem key={`${index}-instruction-${instruction.id}`}>
+                      {instruction?.step}
                     </ListItem>
-                  )
-                }) : <Text pt='2' fontSize='sm'>No ingredients</Text>}
-              </SimpleGrid>
-
-            </List>
-
+                  </>
+                );
+              }) : <Text pt='2' fontSize='sm'>No instructions</Text>}
+            </OrderedList>
           </Box>
         </Stack>
       </CardBody>

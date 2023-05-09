@@ -68,7 +68,7 @@ const InstructionsInput: FunctionComponent<InstructionsInputProps> = (props) =>
             <Center {...provided.dragHandleProps}>
                 <IconGripVertical size="1.2rem" />
             </Center>
-            <Input ref={stepRef} onChange={() => inputChanged()} placeholder='Step' />
+            <Input isRequired ref={stepRef} onChange={() => inputChanged()} placeholder='Step' />
             <IconButton aria-label='Remove recipe' onClick={() => form.removeListItem("instructions", index)} icon={<IconX />} ></IconButton>
         </InputGroup >
     )

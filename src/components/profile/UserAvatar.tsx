@@ -36,7 +36,7 @@ const UserAvatar: FunctionComponent<UserAvatarProps> = (props) =>
                 <PopoverContent w={"100%"}>
                     <PopoverArrow />
                     <PopoverCloseButton />
-                    <UserCard isPopover user={user} isProfileUser={session?.user.id == user.id} />
+                    <UserCard grow isPopover user={user} isProfileUser={session?.user.id == user.id} />
                 </PopoverContent>
             </Portal>
         </Popover>

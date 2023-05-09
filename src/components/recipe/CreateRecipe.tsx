@@ -1,7 +1,7 @@
-import { Heading, Stack, FormControl, FormLabel, Box, Input, List, Textarea, InputGroup, IconButton, Button, Modal, useToast, AlertIcon, Divider, Alert, AlertDescription, AlertTitle, ListItem, ListIcon, ModalFooter, ModalHeader, ModalBody, ModalCloseButton, ModalContent, ModalOverlay } from '@chakra-ui/react'
+import { Heading, Stack, FormControl, FormLabel, Box, Input, List, Textarea, InputGroup, IconButton, Button, Modal, useToast, AlertIcon, Divider, Alert, AlertDescription, AlertTitle, ListItem, ListIcon, ModalFooter, ModalHeader, ModalBody, ModalCloseButton, ModalContent, ModalOverlay, Flex } from '@chakra-ui/react'
 import { useForm } from '@mantine/form';
-import { Center, Grid } from '@mantine/core';
-import { IconPlus, IconX, IconGripVertical } from '@tabler/icons-react'
+import { Center, Grid, Group } from '@mantine/core';
+import { IconPlus, IconX, IconGripVertical, IconAsterisk } from '@tabler/icons-react'
 import React, { type FunctionComponent, useEffect, useState } from 'react'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import axios, { type AxiosError } from 'axios';
@@ -260,7 +260,10 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                                 {ingredients}
                                 <IconButton aria-label='Add recipe' onClick={() => form.insertListItem('Ingredients', { name: '', amount: '', description: "" })} icon={<IconPlus />} />
                                 <Divider />
-                                <Heading as='h4' size='md'>Instructions</Heading>
+                                <Flex gap={1}>
+                                    <Heading as='h4' size='md'>Instructions</Heading>
+                                    <IconAsterisk color='#E4787A' size={10} />
+                                </Flex>
                                 <small style={{ margin: 0 }}>The order everthing has to be done</small>
                                 <DragDropContext
                                     onDragEnd={({ destination, source }) =>
