@@ -1,32 +1,41 @@
-import { Heading, Stack, FormControl, FormLabel, Box, Input, List, Textarea, InputGroup, IconButton, Button, Modal, useToast, AlertIcon, Divider, Alert, AlertDescription, AlertTitle, ListItem, ListIcon, ModalFooter, ModalHeader, ModalBody, ModalCloseButton, ModalContent, ModalOverlay, Flex } from '@chakra-ui/react'
+import { Heading, Stack, FormControl, FormLabel, Box, Input, List, Textarea, InputGroup, IconButton, Button, Modal, useToast, AlertIcon, Divider, Alert, AlertDescription, AlertTitle, ListItem, ListIcon, ModalFooter, ModalHeader, ModalBody, ModalCloseButton, ModalContent, ModalOverlay, Flex, Badge, Card, Image } from '@chakra-ui/react'
 import { useForm } from '@mantine/form';
-import { Center, Grid, Group } from '@mantine/core';
+import { AspectRatio, Center, Grid, Group } from '@mantine/core';
 import { IconPlus, IconX, IconGripVertical, IconAsterisk } from '@tabler/icons-react'
 import React, { type FunctionComponent, useEffect, useState } from 'react'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import axios, { type AxiosError } from 'axios';
 import { EndPoint } from '~/constants/EndPoints';
-import { type RecipeReqCreateType, type RecipeResCreateType } from '~/pages/recipe/recipe';
+import { type RecipeReqCreateType, type RecipeResCreateType } from '~/pages/api/recipe';
 import { type Instruction, type ingredients } from '@prisma/client';
 import { type FullRecipeData } from '~/constants/types';
 import { useRouter } from 'next/router';
 import IngridientsInput from './IngridientsInput';
 import InstructionsInput from './InstructionsInput';
+import { generateReactHelpers } from "@uploadthing/react";
+import { updateRecipeImage } from '~/utils/queries/update-image';
+import ImageBadge from './ImageBadge';
+import { storage } from '~/server/firebase';
+import { getDownloadURL, listAll, ref, uploadBytes } from 'firebase/storage';
+import { v4 } from "uuid"
+import { number } from 'zod';
 
 type CreateRecipeType = {
     isModal?: boolean;
     isOpen?: boolean;
-    recipeId?: number | null;
     onClose?: () => void;
     currentRecipe: FullRecipeData | null;
 }
 const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
 {
-    const { isOpen, onClose, isModal, recipeId, currentRecipe } = props;
+    const { isOpen, onClose, isModal, currentRecipe } = props;
     const [winReady, setWinReady] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [recipeId, setRecipeId] = useState<number | null>(currentRecipe?.id ?? null);
     const [custom, setCustom] = useState(false);
     const [errors, setErrors] = useState<string[] | []>([]);
+    const [currentImage, setCurrentImage] = useState<string | null>(currentRecipe?.imageUrl ?? null);
+    const [selectedFile, setSelectedFile] = useState(null);
     const [title, setTitle] = useState<"Add new Recipe" | string>(currentRecipe?.name ?? "Add new Recipe");
     const router = useRouter();
     const toast = useToast();
@@ -48,6 +57,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
         },
     });
 
+    useEffect(() => { setWinReady(true); fillUpdateForm(currentRecipe) }, []);
 
     //#region Setup custom components for
     const ingredients = form.values.Ingredients?.map((item, index) => (
@@ -63,7 +73,52 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
     ));
     //#endregion
 
-    useEffect(() => { setWinReady(true); }, []);
+    //#region Helper functions
+
+    const handleUpload = async (uploadRecipeId: number) =>
+    {
+        const imageRef = ref(storage, `images/${selectedFile?.name + v4()}`);
+
+        await uploadBytes(imageRef, selectedFile).then((res) =>
+        {
+            const updated = updateRecipeImage(uploadRecipeId as number, res.metadata.fullPath, res.metadata.name);
+           
+            console.log(test)
+            if (!updated)
+            {
+                throw new Error("Image upload failed");
+            }
+
+        }).catch((err) =>
+        {
+            toast({
+                title: "Image upload failed",
+                description: "Image upload failed",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            });
+        });
+    }
+
+    const fillUpdateForm = (data: FullRecipeData) =>
+    {
+
+        form.setValues({
+            name: data?.name as string,
+            description: data?.description ?? "",
+            totalTime: data?.totalTime ?? 0,
+            instructions: data?.instructions,
+            Ingredients: data?.ingredients,
+        })
+        setTitle(data?.name ?? "Add new Recipe");
+        setRecipeId(data?.id);
+        setCustom(true);
+    }
+
+    //#endregion
+
+
 
     const handleRecipeSubmit = async (event: React.FormEvent<HTMLFormElement>) =>
     {
@@ -101,16 +156,8 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                 const newData = res.data as RecipeResCreateType;
                 if (newData.success)
                 {
+                    void handleUpload(newData.fullRecipeData?.id as number);
                     void router.replace(router.asPath, undefined, { scroll: false });
-                    setTitle(newData?.fullRecipeData?.name ?? "Add new Recipe");
-                    form.setValues({
-                        name: newData?.fullRecipeData?.name as string,
-                        description: newData?.fullRecipeData?.description ?? "",
-                        totalTime: newData?.fullRecipeData?.totalTime ?? 0,
-                        instructions: newData?.fullRecipeData?.instructions,
-                        Ingredients: newData?.fullRecipeData?.ingredients,
-                    })
-                    setCustom(true);
                     form.resetDirty();
                     toast({
                         title: "Recipe created",
@@ -148,18 +195,8 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                 const newData = res.data as RecipeResCreateType;
                 if (newData.success)
                 {
-                    setTitle(newData?.fullRecipeData?.name ?? "Add new Recipe");
-
-                    void router.replace(router.asPath, undefined);
-
-                    form.setValues({
-                        name: newData?.fullRecipeData?.name as string,
-                        description: newData?.fullRecipeData?.description ?? "",
-                        totalTime: newData?.fullRecipeData?.totalTime ?? 0,
-                        instructions: newData?.fullRecipeData?.instructions,
-                        Ingredients: newData?.fullRecipeData?.ingredients,
-                    })
-                    setCustom(true);
+                    void handleUpload(newData.fullRecipeData?.id as number);
+                    void router.replace(router.asPath, undefined, { scroll: false });
                     toast({
                         title: `Recipe ${currentRecipe?.name ?? ""} updated`,
                         description: "Recipe was updated successfully",
@@ -167,7 +204,6 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                         duration: 9000,
                         isClosable: true,
                     })
-                    console.log("DIRTY5555555555", form.isDirty());
                 }
                 else
                 {
@@ -177,7 +213,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                         status: "error",
                         duration: 9000,
                         isClosable: true,
-                    })
+                    });
                 }
             }).catch((err: Error | AxiosError) =>
             {
@@ -210,6 +246,10 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
         //     return;
         // }
         onClose?.();
+    }
+    const clearImage = () =>
+    {
+        console.log("ASd")
     }
 
 
@@ -255,6 +295,13 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                                     <FormLabel>Description</FormLabel>
                                     <Textarea placeholder='Mexican dish' {...form.getInputProps("description")} />
                                 </FormControl>
+                                <FormControl>
+                                    <Flex gap={1}>
+                                        <Heading as='h4' size='md'>Instructions</Heading>
+                                        <IconAsterisk color='#E4787A' size={10} />
+                                    </Flex>
+
+                                </FormControl>
 
                                 <Heading as='h4' size='md'>Ingredients</Heading>
                                 {ingredients}
@@ -283,7 +330,8 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                                 <IconButton aria-label='Add instruction' onClick={() => form.insertListItem('instructions', { step: "" })} icon={<IconPlus />} />
 
                             </Stack>
-
+                            <input type="file" onChange={(e) => { setSelectedFile(e.target.files[0]) }} />
+                            <button type="submit">Upload</button>
                         </form>
                     </ModalBody>
                     <ModalFooter>

@@ -1,7 +1,9 @@
+import { listAll, ref } from "firebase/storage";
 import { GetServerSidePropsContext } from "next";
 import { parse } from "path";
 import { getServerAuthSession } from "~/server/auth";
 import { prisma } from "~/server/db";
+import { storage } from "~/server/firebase";
 
 export const requireAuth = async (ctx: GetServerSidePropsContext, name?: string, loadRecipe?: boolean) =>
 {
@@ -51,7 +53,11 @@ export const requireAuth = async (ctx: GetServerSidePropsContext, name?: string,
         const recipe = await prisma.recipe.findUnique({
             include: {
                 ingredients: true,
-                instructions: true,
+                instructions: {
+                    orderBy: {
+                        priority: "asc",
+                    }
+                },
                 user: true,
                 Favorites: true,
             },

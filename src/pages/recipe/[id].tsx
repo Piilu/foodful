@@ -10,6 +10,7 @@ import React, { use } from 'react'
 import Moment from 'react-moment';
 import UserAvatar from '~/components/profile/UserAvatar';
 import CreateRecipe from '~/components/recipe/CreateRecipe';
+import { getImage } from '~/utils/get-image';
 import { requireAuth } from '~/utils/helpers';
 export async function getServerSideProps(ctx: GetServerSidePropsContext)
 {
@@ -36,15 +37,10 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
       {isOpen ?
         <CreateRecipe onClose={onClose} isOpen={isOpen} recipeId={recipe.id} currentRecipe={recipe} isModal />
         : null}
-      <AspectRatio ratio={16 / 5}>
-        <Image
-          objectFit={"cover"}
-          src='https://images.pexels.com/photos/6287527/pexels-photo-6287527.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
-          alt='Chakra UI'
-        />
-      </AspectRatio>
+      SS {getImage(recipe.imageUrl).then((url) => url)}
 
-      <CardBody>
+
+      < CardBody >
         <CardHeader p={0} mb={5} >
           <Group position='apart'>
             <Heading size='lg'>{recipe.name}</Heading>
@@ -101,34 +97,38 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
             <Heading size='xs' textTransform='uppercase'>
               Ingredients ({recipe.ingredients.length}):
             </Heading>
-            <TableContainer shadow={"md"} mt={3} >
-              <Table variant="simple" colorScheme="whiteAlpha" size='sm'>
+            {recipe?.ingredients?.length !== 0 ?
+              <TableContainer shadow={"md"} mt={3} >
+                <Table variant="simple" colorScheme="whiteAlpha" size='sm'>
 
-                <Thead>
-                  <Tr>
-                    <Th>Name</Th>
-                    <Th >Amount</Th>
-                    <Th isNumeric title='Some information about that ingredient'>Infromation</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
+                  <Thead>
+                    <Tr>
+                      <Th>Name</Th>
+                      <Th >Amount</Th>
+                      <Th isNumeric title='Some information about that ingredient'>Infromation</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
 
-                  {recipe?.ingredients?.length !== 0 ? recipe.ingredients.map((ingredient, index) =>
-                  {
-                    return (
-                      <Tr opacity={0.5} key={`${index}-ingredients-${ingredient.id}`} _hover={{
-                        opacity: 1,
-                      }}>
-                        <Td>{ingredient.name}</Td>
-                        <Td > {ingredient.amount}</Td>
-                        <Td isNumeric >{ingredient.description}</Td>
-                      </Tr>
-                    )
-                  }) : <Text pt='2' fontSize='sm'>No ingredients</Text>}
-                </Tbody>
+                    {recipe.ingredients.map((ingredient, index) =>
+                    {
+                      return (
+                        <Tr opacity={0.5} key={`${index}-ingredients-${ingredient.id}`} _hover={{
+                          opacity: 1,
+                        }}>
+                          <Td>{ingredient.name}</Td>
+                          <Td > {ingredient.amount}</Td>
+                          <Td isNumeric >{ingredient.description}</Td>
+                        </Tr>
+                      )
+                    })
+                    }
+                  </Tbody>
 
-              </Table>
-            </TableContainer>
+                </Table>
+              </TableContainer>
+              : <Text pt='2' fontSize='sm'>No ingredients</Text>}
+
           </Box>
 
           <Box>
@@ -150,7 +150,7 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
           </Box>
         </Stack>
       </CardBody>
-    </Card>
+    </Card >
   )
 }
 
