@@ -19,6 +19,7 @@ import { v4 } from "uuid"
 import { number } from 'zod';
 import { updateRecipeImage } from '~/utils/queries/update-image';
 import RecipeImage from './RecipeImage';
+import GeneralInput from './GeneralInput';
 
 type CreateRecipeType = {
     isModal?: boolean;
@@ -216,6 +217,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                     {
                         void router.replace(router.asPath, undefined, { scroll: false });
                     }
+                    setTitle(newData.fullRecipeData?.name ?? "Add new Recipe");
                     toast({
                         title: `Recipe ${currentRecipe?.name ?? ""} updated`,
                         description: "Recipe was updated successfully",
@@ -297,19 +299,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                                 : null}
                             <Stack spacing='4'>
                                 <SimpleGrid columns={2} spacing={5}>
-                                    <FormControl isRequired>
-                                        <FormLabel>Recipe Name</FormLabel>
-                                        <Input type='name'  {...form.getInputProps("name")} />
-                                    </FormControl>
-                                    <FormControl isRequired>
-                                        <FormLabel>Total time (<small style={{ margin: 0 }}>In minutes</small>)</FormLabel>
-                                        <Input type='number'  {...form.getInputProps("totalTime")} />
-                                    </FormControl>
-                                    <FormControl>
-                                        <FormLabel>Description</FormLabel>
-                                        <Textarea placeholder='Mexican dish' {...form.getInputProps("description")} />
-                                    </FormControl>
-
+                                    <GeneralInput form={form} custom={custom} setCustom={setCustom} />
                                     <FormControl>
                                         <FormLabel>Image</FormLabel>
                                         <Group>
@@ -403,19 +393,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
 
                 <Stack spacing='4'>
                     <SimpleGrid columns={2} spacing={5}>
-                        <FormControl isRequired>
-                            <FormLabel>Recipe Name</FormLabel>
-                            <Input type='name'  {...form.getInputProps("name")} />
-                        </FormControl>
-                        <FormControl isRequired>
-                            <FormLabel>Total time (<small style={{ margin: 0 }}>In minutes</small>)</FormLabel>
-                            <Input type='number'  {...form.getInputProps("totalTime")} />
-                        </FormControl>
-                        <FormControl>
-                            <FormLabel>Description</FormLabel>
-                            <Textarea placeholder='Mexican dish' {...form.getInputProps("description")} />
-                        </FormControl>
-
+                        <GeneralInput form={form} custom={custom} setCustom={setCustom} />
                         <FormControl>
                             <FormLabel>Image</FormLabel>
                             <Group>

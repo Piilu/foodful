@@ -42,7 +42,7 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
       </AspectRatio>
 
 
-      < CardBody >
+      <CardBody>
         <CardHeader p={0} mb={5} >
           <Group position='apart'>
             <Heading size='lg'>{recipe.name}</Heading>
@@ -131,11 +131,9 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
               {recipe?.instructions?.length !== 0 ? recipe.instructions.map((instruction, index) =>
               {
                 return (
-                  <>
-                    <ListItem key={`${index}-instruction-${instruction.id}`}>
-                      {instruction?.step}
-                    </ListItem>
-                  </>
+                  <ListItem key={`${index}-instruction-${instruction.id}`}>
+                    {instruction?.step}
+                  </ListItem>
                 );
               }) : <Text pt='2' fontSize='sm'>No instructions</Text>}
             </OrderedList>
