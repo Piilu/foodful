@@ -1,6 +1,6 @@
-import { Heading, Stack, FormControl, FormLabel, Box, Input, List, Textarea, InputGroup, IconButton, Button, Modal, useToast, AlertIcon, Divider, Alert, AlertDescription, AlertTitle, ListItem, ListIcon, ModalFooter, ModalHeader, ModalBody, ModalCloseButton, ModalContent, ModalOverlay, Flex, Badge, Card, Image } from '@chakra-ui/react'
+import { Heading, Stack, FormControl, FormLabel, Box, Input, List, Textarea, InputGroup, IconButton, Button, Modal, useToast, AlertIcon, Divider, Alert, AlertDescription, AlertTitle, ListItem, ListIcon, ModalFooter, ModalHeader, ModalBody, ModalCloseButton, ModalContent, ModalOverlay, Flex, Badge, Card, Image, Text, SimpleGrid } from '@chakra-ui/react'
 import { useForm } from '@mantine/form';
-import { AspectRatio, Center, Grid, Group } from '@mantine/core';
+import { AspectRatio, Center, FileButton, Grid, Group } from '@mantine/core';
 import { IconPlus, IconX, IconGripVertical, IconAsterisk } from '@tabler/icons-react'
 import React, { type FunctionComponent, useEffect, useState } from 'react'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -10,15 +10,15 @@ import { type RecipeReqCreateType, type RecipeResCreateType } from '~/pages/api/
 import { type Instruction, type ingredients } from '@prisma/client';
 import { type FullRecipeData } from '~/constants/types';
 import { useRouter } from 'next/router';
-import IngridientsInput from './IngridientsInput';
+import IngredientsInput from './IngridientsInput';
 import InstructionsInput from './InstructionsInput';
-import { generateReactHelpers } from "@uploadthing/react";
-import { updateRecipeImage } from '~/utils/queries/update-image';
 import ImageBadge from './ImageBadge';
 import { storage } from '~/server/firebase';
 import { getDownloadURL, listAll, ref, uploadBytes } from 'firebase/storage';
 import { v4 } from "uuid"
 import { number } from 'zod';
+import { updateRecipeImage } from '~/utils/queries/update-image';
+import RecipeImage from './RecipeImage';
 
 type CreateRecipeType = {
     isModal?: boolean;
@@ -52,16 +52,16 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
 
         validate: {
             name: (value) => (value.length >= 3 && value.length <= 150 ? null : "Name has to be between 3 and 150 characters"),
-            instructions: (values) => (values.every(value => value.step !== "") && values.length > 0 ? null : "Every instruction needs to have a step and recipe has to have at least one instruction"),
+            instructions: (values) => (values?.every(value => value.step !== "") && values.length > 0 ? null : "Every instruction needs to have a step and recipe has to have at least one instruction"),
             totalTime: (value) => (value != null && value != 0 ? null : "Total time is required"),
         },
     });
 
-    useEffect(() => { setWinReady(true); fillUpdateForm(currentRecipe) }, []);
+    useEffect(() => { setWinReady(true); fillUpdateForm() }, []);
 
     //#region Setup custom components for
     const ingredients = form.values.Ingredients?.map((item, index) => (
-        <IngridientsInput setCustom={setCustom} custom={custom} key={`${index}-ingridients`} index={index} form={form} />
+        <IngredientsInput setCustom={setCustom} custom={custom} key={`${index}-ingridients`} index={index} form={form} />
     ));
 
     const instructions = form.values.instructions?.map((item, index) => (
@@ -79,15 +79,25 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
     {
         const imageRef = ref(storage, `images/${selectedFile?.name + v4()}`);
 
-        await uploadBytes(imageRef, selectedFile).then((res) =>
+        await uploadBytes(imageRef, selectedFile).then((resFile) =>
         {
-            const updated = updateRecipeImage(uploadRecipeId as number, res.metadata.fullPath, res.metadata.name);
-           
-            console.log(test)
-            if (!updated)
+            updateRecipeImage(uploadRecipeId, resFile.metadata.fullPath, resFile.metadata.name).then((res) =>
             {
-                throw new Error("Image upload failed");
-            }
+                if (res)
+                {
+                    setCurrentImage(resFile.metadata.fullPath ?? null);
+                    setSelectedFile(null);
+                    void router.replace(router.asPath, undefined, { scroll: false });
+                }
+                else
+                {
+
+                    throw new Error("Image upload failed");
+                }
+
+            }).catch((err) => { throw new Error("Image upload failed"); })
+
+
 
         }).catch((err) =>
         {
@@ -101,19 +111,19 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
         });
     }
 
-    const fillUpdateForm = (data: FullRecipeData) =>
+    const fillUpdateForm = () =>
     {
-
         form.setValues({
-            name: data?.name as string,
-            description: data?.description ?? "",
-            totalTime: data?.totalTime ?? 0,
-            instructions: data?.instructions,
-            Ingredients: data?.ingredients,
+            name: currentRecipe?.name as string,
+            description: currentRecipe?.description ?? "",
+            totalTime: currentRecipe?.totalTime ?? 0,
+            instructions: currentRecipe?.instructions ?? [],
+            Ingredients: currentRecipe?.ingredients ?? [],
         })
-        setTitle(data?.name ?? "Add new Recipe");
-        setRecipeId(data?.id);
+        setTitle(currentRecipe?.name ?? "Add new Recipe");
+        setRecipeId(currentRecipe?.id ?? null);
         setCustom(true);
+        form.resetDirty();
     }
 
     //#endregion
@@ -123,15 +133,11 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
     const handleRecipeSubmit = async (event: React.FormEvent<HTMLFormElement>) =>
     {
         event.preventDefault();
-        console.log(form.values.instructions)
-
         setErrors([]);
         if (form.isValid() === false)
         {
             const errors = form.validate().errors;
-            console.log(errors)
             const errorList = Object.keys(errors).map((key) => errors[key]) as string[];
-            console.log(errorList);
             setErrors(errorList);
             return;
         }
@@ -156,9 +162,16 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                 const newData = res.data as RecipeResCreateType;
                 if (newData.success)
                 {
-                    void handleUpload(newData.fullRecipeData?.id as number);
-                    void router.replace(router.asPath, undefined, { scroll: false });
-                    form.resetDirty();
+                    if (selectedFile != null)
+                    {
+                        void handleUpload(newData.fullRecipeData?.id as number);
+                    }
+                    else
+                    {
+
+                        void router.replace(router.asPath, undefined, { scroll: false });
+                    }
+                    onClose();
                     toast({
                         title: "Recipe created",
                         description: "Recipe was created successfully",
@@ -195,8 +208,14 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                 const newData = res.data as RecipeResCreateType;
                 if (newData.success)
                 {
-                    void handleUpload(newData.fullRecipeData?.id as number);
-                    void router.replace(router.asPath, undefined, { scroll: false });
+                    if (selectedFile != null)
+                    {
+                        void handleUpload(newData.fullRecipeData?.id as number);
+                    }
+                    else
+                    {
+                        void router.replace(router.asPath, undefined, { scroll: false });
+                    }
                     toast({
                         title: `Recipe ${currentRecipe?.name ?? ""} updated`,
                         description: "Recipe was updated successfully",
@@ -232,7 +251,6 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
 
     const handleRecipeModalClose = () =>
     {
-        // console.log("DIRTY2", form.isDirty());
         // if (form.isDirty())
         // {
         //     const result = confirm("Are you sure you want to close? All unsaved changes will be lost");
@@ -247,11 +265,6 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
         // }
         onClose?.();
     }
-    const clearImage = () =>
-    {
-        console.log("ASd")
-    }
-
 
     if (isModal)
     {
@@ -283,25 +296,49 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                                 </Alert>
                                 : null}
                             <Stack spacing='4'>
-                                <FormControl isRequired>
-                                    <FormLabel>Recipe Name</FormLabel>
-                                    <Input type='name'  {...form.getInputProps("name")} />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormLabel mb={0}>Total time (<small style={{ margin: 0 }}>In minutes</small>)</FormLabel>
-                                    <Input type='number'  {...form.getInputProps("totalTime")} />
-                                </FormControl>
-                                <FormControl>
-                                    <FormLabel>Description</FormLabel>
-                                    <Textarea placeholder='Mexican dish' {...form.getInputProps("description")} />
-                                </FormControl>
-                                <FormControl>
-                                    <Flex gap={1}>
-                                        <Heading as='h4' size='md'>Instructions</Heading>
-                                        <IconAsterisk color='#E4787A' size={10} />
-                                    </Flex>
+                                <SimpleGrid columns={2} spacing={5}>
+                                    <FormControl isRequired>
+                                        <FormLabel>Recipe Name</FormLabel>
+                                        <Input type='name'  {...form.getInputProps("name")} />
+                                    </FormControl>
+                                    <FormControl isRequired>
+                                        <FormLabel>Total time (<small style={{ margin: 0 }}>In minutes</small>)</FormLabel>
+                                        <Input type='number'  {...form.getInputProps("totalTime")} />
+                                    </FormControl>
+                                    <FormControl>
+                                        <FormLabel>Description</FormLabel>
+                                        <Textarea placeholder='Mexican dish' {...form.getInputProps("description")} />
+                                    </FormControl>
 
-                                </FormControl>
+                                    <FormControl>
+                                        <FormLabel>Image</FormLabel>
+                                        <Group>
+                                            <FileButton size={"md"} onChange={setSelectedFile} accept="image/png,image/jpeg">
+                                                {(props) => <Button {...props}>Upload image</Button>}
+                                            </FileButton>
+                                            {selectedFile == null ?
+                                                <AspectRatio ratio={16 / 9} w={{ base: '100%' }} >
+                                                    <RecipeImage recipeName={currentRecipe?.name ?? ""} imageName={currentImage ?? ""} />
+                                                </AspectRatio>
+                                                :
+                                                <AspectRatio ratio={16 / 9} w={{ base: '100%' }} >
+                                                    <Image
+                                                        objectFit='cover'
+                                                        src={window.URL.createObjectURL(selectedFile)}
+                                                        alt={currentRecipe?.name ?? ""}
+                                                    />
+                                                </AspectRatio>
+                                            }
+                                        </Group>
+
+                                        {selectedFile && (
+                                            <Text size="sm" align="center" mt="sm">
+                                                Picked file: {selectedFile.name}
+                                            </Text>
+                                        )}
+
+                                    </FormControl>
+                                </SimpleGrid>
 
                                 <Heading as='h4' size='md'>Ingredients</Heading>
                                 {ingredients}
@@ -330,8 +367,6 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                                 <IconButton aria-label='Add instruction' onClick={() => form.insertListItem('instructions', { step: "" })} icon={<IconPlus />} />
 
                             </Stack>
-                            <input type="file" onChange={(e) => { setSelectedFile(e.target.files[0]) }} />
-                            <button type="submit">Upload</button>
                         </form>
                     </ModalBody>
                     <ModalFooter>
@@ -367,18 +402,49 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                 <Heading mb={5} size='xl'>{title}</Heading>
 
                 <Stack spacing='4'>
-                    <FormControl isRequired>
-                        <FormLabel>Recipe Name</FormLabel>
-                        <Input type='name'  {...form.getInputProps("name")} />
-                    </FormControl>
-                    <FormControl isRequired>
-                        <FormLabel mb={0}>Total time (<small style={{ margin: 0 }}>In minutes</small>)</FormLabel>
-                        <Input type='number'  {...form.getInputProps("totalTime")} />
-                    </FormControl>
-                    <FormControl>
-                        <FormLabel>Description</FormLabel>
-                        <Textarea placeholder='Mexican dish' {...form.getInputProps("description")} />
-                    </FormControl>
+                    <SimpleGrid columns={2} spacing={5}>
+                        <FormControl isRequired>
+                            <FormLabel>Recipe Name</FormLabel>
+                            <Input type='name'  {...form.getInputProps("name")} />
+                        </FormControl>
+                        <FormControl isRequired>
+                            <FormLabel>Total time (<small style={{ margin: 0 }}>In minutes</small>)</FormLabel>
+                            <Input type='number'  {...form.getInputProps("totalTime")} />
+                        </FormControl>
+                        <FormControl>
+                            <FormLabel>Description</FormLabel>
+                            <Textarea placeholder='Mexican dish' {...form.getInputProps("description")} />
+                        </FormControl>
+
+                        <FormControl>
+                            <FormLabel>Image</FormLabel>
+                            <Group>
+                                <FileButton size={"md"} onChange={setSelectedFile} accept="image/png,image/jpeg">
+                                    {(props) => <Button {...props}>Upload image</Button>}
+                                </FileButton>
+                                {selectedFile == null ?
+                                    <AspectRatio ratio={16 / 9} w={{ base: '100%' }} >
+                                        <RecipeImage recipeName={currentRecipe?.name ?? ""} imageName={currentImage ?? ""} />
+                                    </AspectRatio>
+                                    :
+                                    <AspectRatio ratio={16 / 9} w={{ base: '100%' }} >
+                                        <Image
+                                            objectFit='cover'
+                                            src={window.URL.createObjectURL(selectedFile)}
+                                            alt={currentRecipe?.name ?? ""}
+                                        />
+                                    </AspectRatio>
+                                }
+                            </Group>
+
+                            {selectedFile && (
+                                <Text size="sm" align="center" mt="sm">
+                                    Picked file: {selectedFile.name}
+                                </Text>
+                            )}
+
+                        </FormControl>
+                    </SimpleGrid>
 
                     <Heading as='h4' size='md'>Ingredients</Heading>
                     {ingredients}

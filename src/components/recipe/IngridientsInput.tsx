@@ -5,7 +5,7 @@ import { type ingredients, type Instruction } from '@prisma/client';
 import { IconX } from '@tabler/icons-react';
 import { useState, useRef, useEffect, LegacyRef } from 'react';
 
-type IngridientsInputProps = {
+type IngredientsInputProps = {
     index: number,
     form: UseFormReturnType<{
         name: string;
@@ -30,7 +30,7 @@ type IngridientsInputProps = {
     setCustom: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-function IngridientsInput(props: IngridientsInputProps)
+function IngredientsInput(props: IngredientsInputProps)
 {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { index, form,setCustom,custom } = props;
@@ -62,7 +62,6 @@ function IngridientsInput(props: IngridientsInputProps)
     {
         if (nameRef.current && descriptionRef.current && amountRef.current)
         {
-            console.log("useEffect")
             nameRef.current.value = form?.values?.Ingredients[index]?.name;
             descriptionRef.current.value = form?.values?.Ingredients[index]?.description;
             amountRef.current.value = form?.values?.Ingredients[index]?.amount;
@@ -92,4 +91,4 @@ function IngridientsInput(props: IngridientsInputProps)
     );
 }
 
-export default IngridientsInput
+export default IngredientsInput

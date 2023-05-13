@@ -1,5 +1,5 @@
-import { Card, Container, CardHeader, Box, Heading, Text, Image, CardBody, List, CardFooter, Button, Stack, StackDivider, AspectRatio, Divider, Tooltip, Flex, Switch, FormLabel, FormControl, ListItem, SimpleGrid, TableContainer, Table, Thead, Tr, Th, Tbody, Td, background, OrderedList, useDisclosure } from '@chakra-ui/react';
-import { ActionIcon, Group } from '@mantine/core';
+import { Card, Container, CardHeader, Box, Heading, Text, Image, CardBody, List, CardFooter, Button, Stack, StackDivider, AspectRatio, Divider, Tooltip, Flex, Switch, FormLabel, FormControl, ListItem, SimpleGrid, TableContainer, Table, Thead, Tr, Th, Tbody, Td, background, OrderedList, useDisclosure, UnorderedList } from '@chakra-ui/react';
+import { ActionIcon, Group, Text as MantineText } from '@mantine/core';
 import { Favorites, Instruction, Recipe, User, ingredients } from '@prisma/client';
 import { IconClock, IconBook, IconBook2, IconLicense, IconEdit } from '@tabler/icons-react';
 import { GetServerSidePropsContext, NextPage } from 'next';
@@ -10,7 +10,7 @@ import React, { use } from 'react'
 import Moment from 'react-moment';
 import UserAvatar from '~/components/profile/UserAvatar';
 import CreateRecipe from '~/components/recipe/CreateRecipe';
-import { getImage } from '~/utils/get-image';
+import RecipeImage from '~/components/recipe/RecipeImage';
 import { requireAuth } from '~/utils/helpers';
 export async function getServerSideProps(ctx: GetServerSidePropsContext)
 {
@@ -37,7 +37,9 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
       {isOpen ?
         <CreateRecipe onClose={onClose} isOpen={isOpen} recipeId={recipe.id} currentRecipe={recipe} isModal />
         : null}
-      SS {getImage(recipe.imageUrl).then((url) => url)}
+      <AspectRatio h={"20em"} ratio={16 / 9}>
+        <RecipeImage recipeName={recipe.name ?? ""} imageName={recipe.imageUrl as string} />
+      </AspectRatio>
 
 
       < CardBody >
@@ -45,7 +47,7 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
           <Group position='apart'>
             <Heading size='lg'>{recipe.name}</Heading>
             <Group>
-              <Tooltip openDelay={500} label='Favorite'>
+              <Tooltip openDelay={500} label='Favorite (Yum)'>
                 <ActionIcon color={recipe.Favorites.some((favorite) => favorite.userId == session?.user.id) ? "orange" : "gray"}>
                   <IconLicense />
                 </ActionIcon>
@@ -98,35 +100,25 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
               Ingredients ({recipe.ingredients.length}):
             </Heading>
             {recipe?.ingredients?.length !== 0 ?
-              <TableContainer shadow={"md"} mt={3} >
-                <Table variant="simple" colorScheme="whiteAlpha" size='sm'>
 
-                  <Thead>
-                    <Tr>
-                      <Th>Name</Th>
-                      <Th >Amount</Th>
-                      <Th isNumeric title='Some information about that ingredient'>Infromation</Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
+              <UnorderedList>
+                <SimpleGrid columns={[2, null, 4]} >
 
-                    {recipe.ingredients.map((ingredient, index) =>
-                    {
-                      return (
-                        <Tr opacity={0.5} key={`${index}-ingredients-${ingredient.id}`} _hover={{
-                          opacity: 1,
-                        }}>
-                          <Td>{ingredient.name}</Td>
-                          <Td > {ingredient.amount}</Td>
-                          <Td isNumeric >{ingredient.description}</Td>
-                        </Tr>
-                      )
-                    })
-                    }
-                  </Tbody>
-
-                </Table>
-              </TableContainer>
+                  {recipe.ingredients.map((ingredient, index) =>
+                  {
+                    return (
+                      <ListItem my={2} key={`${index}-ingredient-${ingredient.id}`}>
+                        <Flex gap={1} wrap={"nowrap"}>
+                          <Text>{ingredient.name}</Text>
+                          <Text > ({ingredient.amount})</Text>
+                        </Flex>
+                        <MantineText fz="sm" c="dimmed">{ingredient.description}</MantineText>
+                      </ListItem>
+                    )
+                  })
+                  }
+                </SimpleGrid>
+              </UnorderedList>
               : <Text pt='2' fontSize='sm'>No ingredients</Text>}
 
           </Box>

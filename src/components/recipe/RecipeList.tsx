@@ -53,7 +53,6 @@ function RecipeList(props: RecipeListType)
 
     const openRecipeModal = async (id: number) =>
     {
-        console.log("OPEN MODAL", id);
         setOpenRecipeId(id);
         // setCurrentRecipe(await getRecipe(id));
         setCurrentRecipe(items?.find((item) => item.id === id));

@@ -1,5 +1,5 @@
 import React, { type FunctionComponent } from 'react';
-import { Card, CardBody, CardFooter, Button, Heading, Stack, Image, Text, Flex, Icon, MenuButton, Menu, MenuList, MenuItem, Portal, useDisclosure, useColorMode, Divider, Tooltip } from '@chakra-ui/react';
+import { Card, CardBody, CardFooter, Button, Heading, Stack, Image, Text, Flex, Icon, MenuButton, Menu, MenuList, MenuItem, Portal, useDisclosure, useColorMode, Divider, Tooltip, AspectRatio } from '@chakra-ui/react';
 import { useSession } from 'next-auth/react';
 import { IconBook, IconClock, IconDotsVertical, IconLicense, IconMessage } from '@tabler/icons-react';
 import { ActionIcon, Group, MediaQuery } from '@mantine/core';
@@ -9,6 +9,8 @@ import { type FullRecipeData } from '~/constants/types';
 import prettyMilliseconds from 'pretty-ms';
 import Moment from 'react-moment';
 import UserAvatar from '../profile/UserAvatar';
+import RecipeImage from './RecipeImage';
+import Link from 'next/link';
 
 type RecipeProps = {
     horizontal?: boolean,
@@ -41,12 +43,9 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                 overflow='hidden'
                 variant='outline'
             >
-                <Image
-                    objectFit='cover'
-                    maxW={{ base: '100%', sm: '200px' }}
-                    src='https://images.unsplash.com/photo-1667489022797-ab608913feeb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHw5fHx8ZW58MHx8fHw%3D&auto=format&fit=crop&w=800&q=60'
-                    alt='Caffe Latte'
-                />
+                <AspectRatio ratio={16 / 9} w={{ base: '100%', sm: "25%" }} >
+                    <RecipeImage isListItem imageName={recipe?.imageUrl ?? ""} recipeName={recipe?.name ?? ""} />
+                </AspectRatio>
                 <Stack w={"100%"}  >
                     <CardBody  >
                         <Flex gap='2' >
@@ -121,10 +120,12 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
 
                         </CardBody>
                         <CardFooter gap={5}>
-                            <Button w={"100%"} variant='ghost' leftIcon={<IconLicense />}>
-                                Yum! {recipe?.Favorites?.length ?? 0}
-                            </Button>
-                            <Button onClick={openRecipeView} w={"100%"} colorScheme="orange">View Recipe</Button>
+                            <Group w={"100%"} position='center'>
+                                <Button w={"100%"} variant='ghost' size={"sm"} leftIcon={<IconLicense />}>Yum! {recipe?.Favorites?.length ?? 0}</Button>
+                                <Link style={{ width: "100%" }} href={`/recipe/${recipe?.id}`}>
+                                    <Button w={"100%"} colorScheme="orange">View Recipe</Button>
+                                </Link>
+                            </Group>
                         </CardFooter>
                     </Flex>
                 </div>
@@ -139,11 +140,9 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                     <CreateRecipe isOpen={isOpen} onClose={onClose} currentRecipe={recipe} isModal recipeId={recipe?.id} />
                     : null}
                 <Card w={250} h={445} maxW="xs" >
-                    <Image
-                        src='https://images.pexels.com/photos/262905/pexels-photo-262905.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
-                        alt='Green double couch with wooden legs'
-                        borderRadius='lg'
-                    />
+                    <AspectRatio ratio={16 / 9} w={{ base: '100%' }} >
+                        <RecipeImage imageName={recipe?.imageUrl ?? ""} recipeName={recipe?.name ?? ""} />
+                    </AspectRatio>
                     <CardBody>
                         <Stack spacing='1'>
                             <Group >
@@ -198,7 +197,9 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                         </Button>
                         <Button flex='2' variant='ghost' leftIcon={<IconMessage />}>
                         </Button> */}
-                        <Button w={"100%"} colorScheme="orange" onClick={openRecipeView}>View Recipe</Button>
+                        <Link style={{ width: "100%" }} href={`/recipe/${recipe?.id}`}>
+                            <Button w={"100%"} colorScheme="orange">View Recipe</Button>
+                        </Link>
                     </CardFooter>
                 </Card>
             </>

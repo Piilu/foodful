@@ -51,8 +51,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         if (method === "POST" && session)
         {
-            //Maybe use upsert
-            console.log("Data: ", ingredients)
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             const recipe = await prisma.recipe.create({
                 include: {

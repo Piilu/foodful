@@ -10,7 +10,6 @@ export const updateRecipeImage = async (recipeId: number, imageUrl: string, imag
         imageUrl: imageUrl,
         imageName: imageName,
     }
-    console.log(data)
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const response = (await axios.post(`${window.origin}${EndPoint.RECIPEIMAGE}`, data)).data as ImageUpdateRes;
     if (response.success)

@@ -37,7 +37,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     imageName: imageName,
                 }
             })
-
+            response.success = true;
+            res.status(200).json(response);
+            return;
 
         }
 
