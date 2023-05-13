@@ -6,4 +6,6 @@ export enum EndPoint
     RECIPELIST = "/api/recipe/list",
     USER = "/api/user",
     USERCOUNT = "/api/user/count",
+    RECIPEIMAGE = "/api/recipe/image",
+    IMAGEPREVIEW = "/recipe/image/preview/files",
 }

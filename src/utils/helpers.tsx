@@ -1,7 +1,9 @@
+import { listAll, ref } from "firebase/storage";
 import { GetServerSidePropsContext } from "next";
 import { parse } from "path";
 import { getServerAuthSession } from "~/server/auth";
 import { prisma } from "~/server/db";
+import { storage } from "~/server/firebase";
 
 export const requireAuth = async (ctx: GetServerSidePropsContext, name?: string, loadRecipe?: boolean) =>
 {
@@ -16,9 +18,9 @@ export const requireAuth = async (ctx: GetServerSidePropsContext, name?: string,
         if (profileUser === null)
         {
             return {
-                redirect: {
-                    destination: "/404",
-                    permanent: false,
+                props: {
+                    session: session,
+                    notFound: true,
                 },
             }
         }
@@ -51,7 +53,11 @@ export const requireAuth = async (ctx: GetServerSidePropsContext, name?: string,
         const recipe = await prisma.recipe.findUnique({
             include: {
                 ingredients: true,
-                instructions: true,
+                instructions: {
+                    orderBy: {
+                        priority: "asc",
+                    }
+                },
                 user: true,
                 Favorites: true,
             },
@@ -59,6 +65,8 @@ export const requireAuth = async (ctx: GetServerSidePropsContext, name?: string,
                 id: id,
             }
         })
+
+        const isRecipeOwner = recipe?.user?.id === session?.user?.id;
 
         if (recipe === null)
         {
@@ -75,6 +83,7 @@ export const requireAuth = async (ctx: GetServerSidePropsContext, name?: string,
                 props: {
                     session: session,
                     recipe: recipe,
+                    isRecipeOwner: isRecipeOwner,
                 },
             }
         }

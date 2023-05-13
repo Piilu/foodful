@@ -1,13 +1,12 @@
-import { Heading, FormControl, FormLabel, Input, Textarea, Button, Box, useToast, Modal, ModalOverlay, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalFooter, ButtonGroup } from '@chakra-ui/react'
+import { Heading, FormControl, FormLabel, Input, Textarea, Button, useToast, Modal, ModalOverlay, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalFooter, ButtonGroup } from '@chakra-ui/react'
 import { useForm } from '@mantine/form'
-import { User } from '@prisma/client';
-import axios from 'axios';
+import { type User } from '@prisma/client';
+import axios, { AxiosError } from 'axios';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import React, { FunctionComponent, use, useEffect, useState } from 'react'
+import React, { type FunctionComponent, useEffect, useState } from 'react'
 import { EndPoint } from '~/constants/EndPoints';
-import { UserReqType, UserResType } from '~/pages/api/user';
-import { getUser } from '~/utils/queries/get-user';
+import { type UserReqType, type UserResType } from '~/pages/api/user';
 
 type EditProfilType = {
     user: User;
@@ -46,12 +45,11 @@ const EditProfile: FunctionComponent<EditProfilType> = (props) =>
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>, close?: boolean) =>
     {
         event.preventDefault()
-        console.log("COLSE:", close)
         const data: UserReqType = {
             name: form.values.nickname,
-            image: form.values.imageLink,
-            bio: form.values.bio,
-            website: form.values.website,
+            image: form.values.imageLink ?? "",
+            bio: form.values.bio ?? "",
+            website: form.values.website ?? "",
         }
 
         setLoading(true)
@@ -83,7 +81,7 @@ const EditProfile: FunctionComponent<EditProfilType> = (props) =>
                     isClosable: true,
                 })
             }
-        }).catch((err) =>
+        }).catch((err: Error | AxiosError) =>
         {
             toast({
                 title: 'Error',
@@ -141,14 +139,14 @@ const EditProfile: FunctionComponent<EditProfilType> = (props) =>
                         <ButtonGroup>
 
                             <Button
-                                onClick={(event) => handleSubmit(event, true)}
+                                onClick={(event) => void handleSubmit(event, true)}
                                 loadingText='Saving'
                                 isLoading={loading}
                                 colorScheme="orange"
                                 type="submit">Save and close</Button>
 
                             <Button
-                                onClick={(event) => handleSubmit(event, false)}
+                                onClick={(event) => void handleSubmit(event, false)}
                                 loadingText='Saving'
                                 isLoading={loading}
                                 colorScheme="green"

@@ -1,8 +1,6 @@
-import { Flex } from '@chakra-ui/react'
 import { ActionIcon } from '@mantine/core'
 import { IconWorld } from '@tabler/icons-react'
-import { Text } from '@mantine/core'
-import React, { FunctionComponent } from 'react'
+import React, { type FunctionComponent } from 'react'
 type PromoLinkType = {
     link: string | null,
 }

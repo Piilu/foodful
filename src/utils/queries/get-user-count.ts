@@ -6,7 +6,7 @@ import { UserCountResType } from "~/pages/api/user/count";
 
 export const getUserCount = async (id: string): Promise<UserCountResType | null> =>
 {
-    const data = { userId: id };
+    let data = { userId: id };
     const response = (await axios.post(`${window.origin}${EndPoint.USERCOUNT}`, data)).data as UserCountResType;
     return response;
 }
