@@ -17,7 +17,7 @@ const Home: NextPage = () =>
   return (
     <>
       {/* See saab eraldi komponent olla */}
-      <Text align="center" pb={5} fontSize="4xl" > Todays hot recipes</Text>
+      <Text align="center" pb={5} fontSize="4xl" > Todays hot recipes 🔥 </Text>
       <Group style={{ justifyContent: "center" }}>
         <PopularRecipes />
       </Group>
