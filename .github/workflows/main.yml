@@ -1,4 +1,4 @@
-name: Build
+name: Build & Publish
 
 on:
   push:
@@ -26,8 +26,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
       - run: npm run build
-  docke-build: #in making
-    if: ${{ github.event_name == 'workflow_dispatch' }}       # Run only if triggered manually
+          
+  build_and_push: #in making'
+  needs: next-build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repo 
