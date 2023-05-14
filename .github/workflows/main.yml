@@ -28,7 +28,7 @@ jobs:
       - run: npm run build
           
   build_and_push: #in making'
-  needs: next-build
+    needs: next-build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repo 
