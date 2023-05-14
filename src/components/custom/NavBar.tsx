@@ -42,7 +42,7 @@ const NavBar = () =>
         </Text>
       ),
       labels: { confirm: 'Yes', cancel: 'No' },
-      onConfirm: () => signOut(),
+      onConfirm: () => void signOut(),
     });
   }
   return (
@@ -88,7 +88,7 @@ const NavBar = () =>
                 </MenuList>
               </Menu>
 
-              : <Button size="md" colorScheme='green' size={"md"} leftIcon={<IconBrandGoogle />} onClick={(e) => { e.preventDefault(); void signIn("google") }}>Login</Button>}
+              : <Button size="md" colorScheme='green' leftIcon={<IconBrandGoogle />} onClick={(e) => { e.preventDefault(); void signIn("google") }}>Login</Button>}
           </Flex>
         </Flex>
 

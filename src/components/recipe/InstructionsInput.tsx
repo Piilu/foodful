@@ -1,10 +1,10 @@
 import { IconButton, Input, InputGroup } from '@chakra-ui/react'
 import { Center } from '@mantine/core'
 import { type UseFormReturnType } from '@mantine/form'
-import { ingredients, Instruction } from '@prisma/client'
+import { type ingredients, type Instruction } from '@prisma/client'
 import { IconGripVertical, IconX } from '@tabler/icons-react'
-import React, { FunctionComponent, LegacyRef, useRef, useState, useEffect } from 'react'
-import { DraggableLocation, DraggableProvided } from 'react-beautiful-dnd'
+import React, { type FunctionComponent, type LegacyRef, useRef, useState, useEffect } from 'react'
+import { DraggableLocation, type DraggableProvided } from 'react-beautiful-dnd'
 
 type InstructionsInputProps = {
     index: number,

@@ -11,12 +11,14 @@ import Moment from 'react-moment';
 import UserAvatar from '../profile/UserAvatar';
 import RecipeImage from './RecipeImage';
 import Link from 'next/link';
+import FavoriteButton from './FavoriteButton';
+import DeleteButton from './DeleteButton';
 
 type RecipeProps = {
     horizontal?: boolean,
     recipe: FullRecipeData,
     userId: string,
-    openRecipeModal?: (id: number) => void,
+    openRecipeModal?: (id: number | undefined) => void,
 }
 
 const Recipe: FunctionComponent<RecipeProps> = (props) => 
@@ -29,11 +31,6 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
     const router = useRouter();
     const { isOpen, onOpen, onClose } = useDisclosure();
 
-    const openRecipeView = () =>
-    {
-        void router.push(`/recipe/${recipe?.id}`, undefined);
-    }
-
     if (horizontal)
     {
         return (
@@ -44,17 +41,17 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                 variant='outline'
             >
                 <AspectRatio ratio={16 / 9} w={{ base: '100%', sm: "25%" }} >
-                    <RecipeImage isListItem imageName={recipe?.imageUrl ?? ""} recipeName={recipe?.name ?? ""} />
+                    <RecipeImage isListItem imageName={recipe?.imageFullName ?? ""} recipeName={recipe?.name ?? ""} />
                 </AspectRatio>
                 <Stack w={"100%"}  >
                     <CardBody  >
                         <Flex gap='2' >
-                            <Heading size='md'>{recipe?.name}</Heading>
+                            <Heading size='md' wordBreak={"break-all"} maxW={"100%"}>{recipe?.name}</Heading>
                             <Group position="left" opacity={0.7}>
                                 <Tooltip openDelay={500} label="Total Time" placement="top">
                                     <Flex gap={1}>
                                         <IconClock size={18} color='green' />
-                                        <Text fontSize={12} as={"b"}>{prettyMilliseconds(recipe?.totalTime * 60000)}</Text>
+                                        <Text fontSize={12} as={"b"}>{prettyMilliseconds(recipe?.totalTime ?? 0 * 60000)}</Text>
                                     </Flex>
                                 </Tooltip>
                                 <Tooltip openDelay={500} label="Total Ingridients" placement='top'>
@@ -74,7 +71,7 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                                             <Portal>
                                                 <MenuList>
                                                     <MenuItem onClick={() => void openRecipeModal?.(recipe?.id)}>Edit</MenuItem>
-                                                    <MenuItem color={"red"}>Delete</MenuItem>
+                                                    <DeleteButton recipeId={recipe?.id ?? -1} />
                                                 </MenuList>
                                             </Portal>
                                         </Menu>
@@ -110,7 +107,7 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                                             <Portal>
                                                 <MenuList>
                                                     <MenuItem onClick={() => void openRecipeModal?.(recipe?.id)}>Edit</MenuItem>
-                                                    <MenuItem color={"red"}>Delete</MenuItem>
+                                                    <DeleteButton recipeId={recipe?.id ?? -1} />
                                                 </MenuList>
                                             </Portal>
                                         </Menu>
@@ -121,8 +118,8 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                         </CardBody>
                         <CardFooter gap={5}>
                             <Group w={"100%"} position='center'>
-                                <Button w={"100%"} variant='ghost' size={"sm"} leftIcon={<IconLicense />}>Yum! {recipe?.Favorites?.length ?? 0}</Button>
-                                <Link style={{ width: "100%" }} href={`/recipe/${recipe?.id}`}>
+                                <FavoriteButton recipeId={recipe?.id ?? -1} count={recipe?.Favorites.length ?? 0} isFavorite={recipe?.Favorites.some(favorite => (favorite.userId == session?.user.id ? true : false)) ?? false} />
+                                <Link style={{ width: "100%" }} href={`/recipe/${recipe?.id ?? "-1"}`}>
                                     <Button w={"100%"} colorScheme="orange">View Recipe</Button>
                                 </Link>
                             </Group>
@@ -137,16 +134,16 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
         return (
             <>
                 {isOpen ?
-                    <CreateRecipe isOpen={isOpen} onClose={onClose} currentRecipe={recipe} isModal recipeId={recipe?.id} />
+                    <CreateRecipe isOpen={isOpen} onClose={onClose} currentRecipe={recipe} isModal />
                     : null}
                 <Card w={250} h={445} maxW="xs" >
                     <AspectRatio ratio={16 / 9} w={{ base: '100%' }} >
-                        <RecipeImage imageName={recipe?.imageUrl ?? ""} recipeName={recipe?.name ?? ""} />
+                        <RecipeImage imageName={recipe?.imageFullName ?? ""} recipeName={recipe?.name ?? ""} />
                     </AspectRatio>
                     <CardBody>
                         <Stack spacing='1'>
-                            <Group >
-                                <Heading size='md'>{recipe?.name}</Heading>
+                            <Group noWrap >
+                                <Heading title={recipe?.name} noOfLines={2} size='md' wordBreak={"break-all"} maxW={"100%"}>{recipe?.name}</Heading>
                                 {isOwner ?
                                     <Menu>
                                         <MenuButton as={ActionIcon} ml={"auto"}>
@@ -155,7 +152,7 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                                         <Portal>
                                             <MenuList>
                                                 <MenuItem onClick={onOpen}>Edit</MenuItem>
-                                                <MenuItem color={"red"}>Delete</MenuItem>
+                                                <DeleteButton recipeId={recipe?.id ?? -1} />
                                             </MenuList>
                                         </Portal>
                                     </Menu>
@@ -176,7 +173,7 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
 
                                     <Flex gap={1}>
                                         <IconClock size={18} color='green' />
-                                        <Text fontSize={12} as={"b"}>{prettyMilliseconds(recipe?.totalTime * 60000)}</Text>
+                                        <Text fontSize={12} as={"b"}>{prettyMilliseconds(recipe?.totalTime ?? 0 * 60000)}</Text>
                                     </Flex>
                                 </Tooltip>
                                 <Tooltip openDelay={500} label="Total Ingridients" placement='top'>
@@ -197,7 +194,7 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                         </Button>
                         <Button flex='2' variant='ghost' leftIcon={<IconMessage />}>
                         </Button> */}
-                        <Link style={{ width: "100%" }} href={`/recipe/${recipe?.id}`}>
+                        <Link style={{ width: "100%" }} href={`/recipe/${recipe?.id ?? "-1"}`}>
                             <Button w={"100%"} colorScheme="orange">View Recipe</Button>
                         </Link>
                     </CardFooter>

@@ -6,7 +6,7 @@ import { prisma } from "~/server/db";
 
 export type ImageUpdateReq = {
     recipeId: number;
-    imageUrl: string;
+    imageFullName: string;
     imageName: string;
 }
 
@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 {
     const response = {} as ImageUpdateRes;
     const session = await getServerAuthSession({ req, res })
-    const { recipeId, imageName, imageUrl } = req.body as ImageUpdateReq;
+    const { recipeId, imageName, imageFullName } = req.body as ImageUpdateReq;
     const method = req.method;
 
     try
@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     id: recipeId,
                 },
                 data: {
-                    imageUrl: imageUrl,
+                    imageFullName: imageFullName,
                     imageName: imageName,
                 }
             })

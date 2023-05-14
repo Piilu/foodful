@@ -85,6 +85,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     take: take,
                     orderBy: { createdAt: orderCreatedAt },
                     where: {
+                        deleted: false,
                         name: { contains: searchName },
                         ...(userId != undefined ? { userId: userId } : {}),
                     },
@@ -101,6 +102,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         name: {
                             contains: searchName,
                         },
+                        deleted: false,
                         ...(userId != undefined ? { userId: userId } : {}),
                     },
                 });

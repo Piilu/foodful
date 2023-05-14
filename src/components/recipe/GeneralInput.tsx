@@ -29,9 +29,9 @@ const GeneralInput: FunctionComponent<GeneralInputProps> = (props) =>
 {
     const { form, custom, setCustom } = props;
     const [timer, setTimer] = useState<number | null | NodeJS.Timeout>(null)
-    const nameRef = useRef<LegacyRef<HTMLInputElement> | undefined>();
-    const totalTimeRef = useRef<LegacyRef<HTMLInputElement> | undefined>();
-    const descriptionRef = useRef<LegacyRef<HTMLInputElement> | undefined>();
+    const nameRef = useRef<LegacyRef<HTMLInputElement> | null>(null);
+    const totalTimeRef = useRef<LegacyRef<HTMLInputElement> | null>(null);
+    const descriptionRef = useRef<LegacyRef<HTMLInputElement> | null>(null);
 
     const inputChanged = () =>
     {
@@ -40,6 +40,7 @@ const GeneralInput: FunctionComponent<GeneralInputProps> = (props) =>
         //Debounce, läheb tööle siis kui kirjutamine lopetakse
         const newTimer = setTimeout(() =>
         {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             form.setFieldValue(`name`, nameRef?.current?.value);
             form.setFieldValue(`description`, descriptionRef?.current?.value);
             form.setFieldValue(`totalTime`, totalTimeRef?.current?.value);

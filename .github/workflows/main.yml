@@ -26,3 +26,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
       - run: npm run build
+  docke-build: #in making
+    if: ${{ github.event_name == 'workflow_dispatch' }}       # Run only if triggered manually
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repo 
+        uses: actions/checkout@v3
+      - name: Build image 
+        run: docker build -t foodful .

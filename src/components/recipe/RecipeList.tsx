@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import Recipe from './Recipe'
 import axios from 'axios';
 import { EndPoint } from '~/constants/EndPoints';
-import { type RecipeReqListType, type RecipeResListGetType } from '~/pages/recipe/recipe/list';
 import { InputGroup, InputLeftElement, Input, Checkbox, useDisclosure, Box } from "@chakra-ui/react";
 import { type Recipe as RecipeBackType } from "@prisma/client";
 import { Group, Pagination } from '@mantine/core';
@@ -13,6 +12,8 @@ import { useRouter } from 'next/router';
 import SearchNotFound from '../custom/SearchNotFound';
 import CreateRecipe from './CreateRecipe';
 import { type FullRecipeData } from '~/constants/types';
+import { type RecipeResListGetType } from '~/pages/api/recipe/list';
+import { type RecipeReqListType } from '~/pages/api/recipe/list';
 
 type RecipeListType = {
     limit: number;
@@ -34,7 +35,7 @@ function RecipeList(props: RecipeListType)
     const [loading, setLoading] = useState<boolean>(true);
     const [favorite, setFavorite] = useState<boolean>(false);
     const router = useRouter();
-    const checkRef = useRef<React.LegacyRef<HTMLInputElement> | undefined>();
+    const checkRef = useRef<any>();
     const [openRecipeId, setOpenRecipeId] = useState<number | null>(null);
     const [currentRecipe, setCurrentRecipe] = useState<FullRecipeData | null>(null);
     const { scrollIntoView, targetRef } = useScrollIntoView<HTMLDivElement>({
@@ -51,12 +52,14 @@ function RecipeList(props: RecipeListType)
     }
 
 
-    const openRecipeModal = async (id: number) =>
+    const openRecipeModal = async (id: number | undefined) =>
     {
-        setOpenRecipeId(id);
-        // setCurrentRecipe(await getRecipe(id));
-        setCurrentRecipe(items?.find((item) => item.id === id));
-        onOpen();
+        if (id !== undefined)
+        {
+            setOpenRecipeId(id);
+            setCurrentRecipe(items?.find((item) => item.id === id));
+            onOpen();
+        }
     }
     useEffect(() =>
     {
@@ -85,7 +88,7 @@ function RecipeList(props: RecipeListType)
             searchName: value,
             userId: userId,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            favorite: showFavorites ? checkRef.current?.checked : false ?? false,
+            favorite: showFavorites ? checkRef?.current?.checked : false ?? false,
             orderCreatedAt: orderCreatedAt ?? "desc"
         }
         setLoading(true);
@@ -95,7 +98,7 @@ function RecipeList(props: RecipeListType)
 
             if (newData.success)
             {
-                setItems(newData.recipes);
+                setItems(newData.recipes as RecipeBackType[]);
                 setPages(Math.ceil(newData.totalRecipes / limit));
             } else
             {
@@ -111,7 +114,7 @@ function RecipeList(props: RecipeListType)
     return (
         <Box pb={10}>
             {isOpen ?
-                <CreateRecipe currentRecipe={currentRecipe} recipeId={openRecipeId} isOpen={isOpen} isModal onClose={onClose} />
+                <CreateRecipe currentRecipe={currentRecipe} isOpen={isOpen} isModal onClose={onClose} />
                 : null}
             {search ?
                 <InputGroup mb={5}>
@@ -138,7 +141,7 @@ function RecipeList(props: RecipeListType)
             {
                 return (
                     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                    <Recipe openRecipeModal={openRecipeModal} key={item.id} horizontal recipe={item} userId={item.userId} />
+                    <Recipe openRecipeModal={openRecipeModal} key={item.id} horizontal recipe={item as FullRecipeData} userId={item.userId} />
                 )
             }) : <SearchNotFound value="Can't find any recipes" />}
             <Pagination style={{ float: "right" }} value={activePage} onChange={handlePageChange} total={pages} />

@@ -102,6 +102,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const deleteIngredients = existingngRecipe[0]?.ingredients.filter((ingredient) => !ingredients.some((ing) => ing.id === ingredient.id))
 
             console.log(instructions)
+            const isOwner = await prisma.recipe.findFirst({ where: { id: recipeId, userId: session?.user.id } })
+            if (!isOwner)
+            {
+                response.success = false;
+                response.error = "You are not the owner of this recipe";
+                res.status(500).json(response);
+                return;
+            }
             const recipe = await prisma.recipe.update({
                 include: {
                     ingredients: true,
@@ -160,6 +168,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             recipe.ingredients = sortedIngredients;
             response.fullRecipeData = recipe;
             console.log("Time: ", (endTime - startTime).toFixed(2) + "ms")
+            res.status(200).json(response);
+            return;
+        }
+        if (method === "DELETE" && session)
+        {
+            const { recipeId } = req.query as unknown as { recipeId: string }
+            const recipeIdNumber = parseInt(recipeId);
+            if (recipeId === null)
+            {
+                response.success = false;
+                response.error = "Recipe Id is null";
+                res.status(500).json(response);
+                return;
+            }
+            const isOwner = await prisma.recipe.findFirst({ where: { id: recipeIdNumber, userId: session?.user.id } })
+            if (isOwner == null)
+            {
+                response.success = false;
+                response.error = "You are not the owner of this recipe";
+                res.status(500).json(response);
+                return;
+            }
+
+            await prisma.recipe.update({
+                where: {
+                    id: recipeIdNumber,
+                },
+                data: {
+                    deleted: true,
+                }
+            })
+
+            response.success = true;
             res.status(200).json(response);
             return;
         }

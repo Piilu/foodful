@@ -1,15 +1,16 @@
 import { Card, CardBody, Stack, Box, Heading, Flex, Avatar, Center, CardFooter, ButtonGroup, Button, useDisclosure } from '@chakra-ui/react'
 import { ActionIcon, Group, Text } from '@mantine/core'
-import { User } from '@prisma/client'
+import { type User } from '@prisma/client'
 import { IconEdit } from '@tabler/icons-react'
-import React, { FunctionComponent, useEffect, useState } from 'react'
+import React, { type FunctionComponent, useEffect, useState } from 'react'
 import StatCard from './StatText'
 import StatText from './StatText'
 import PromoLink from './PromoLink'
 import EditProfile from './EditProfile'
 import { getUserCount } from '~/utils/queries/get-user-count'
-import { UserCountResType } from '~/pages/api/user/count'
+import { type UserCountResType } from '~/pages/api/user/count'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 
 type UserCardType = {
     user: User,
@@ -24,16 +25,18 @@ const UserCard: FunctionComponent<UserCardType> = (props) =>
     const [recipeCount, setRecipeCount] = useState<number>()
     const [favorites, setFavorites] = useState<number>()
     const { isOpen, onOpen, onClose } = useDisclosure()
+    const router = useRouter()
     useEffect(() =>
     {
-        getCount();
-    }, [])
+        void getCount();
+    }, [router])
     const getCount = async () =>
     {
         const data: UserCountResType = await getUserCount(user.id) as UserCountResType;
         setRecipeCount(data.recipes)
         setFavorites(data.favorites)
     }
+    if (user == undefined || user == null) return null
     return (
         <>
             <EditProfile user={user} isModal isOpen={isOpen} onClose={onClose} />
@@ -45,15 +48,15 @@ const UserCard: FunctionComponent<UserCardType> = (props) =>
                                 <Box >
                                     <Avatar
                                         size="lg"
-                                        name={user?.name}
-                                        src={user?.image}
+                                        name={user.name as string}
+                                        src={user.image as string}
                                     />
                                 </Box>
                                 <Flex flexWrap="nowrap" gap={5} >
                                     <Flex gap={4} direction={"column"}>
                                         <Heading size="md">
                                             <Group noWrap>
-                                                {isPopover ? <Link style={{ textDecoration: "underline" }} href={`/${user.name}`}>{user.name}</Link> : user.name}
+                                                {isPopover ? <Link style={{ textDecoration: "underline" }} href={`/${user.name as string}`}>{user.name}</Link> : user.name}
 
                                                 {isProfileUser ?
                                                     !isPopover ?
