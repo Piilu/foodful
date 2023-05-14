@@ -7,31 +7,36 @@ on:
   workflow_dispatch:      # Manually run the workflow
 
 jobs:
-  next-build:
-    runs-on: ubuntu-latest
-    container: node:lts          # Use node LTS container version, same as Dockerfile base image
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3       # Checkout the code
-      - run: npm ci            #install dependencies
-      - name: Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            ${{ github.workspace }}/.next/cache
-          # Generate a new cache whenever packages or source files change.
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
-          # If source files changed but packages didn't, rebuild from a prior cache.
-          restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
-      - run: npm run build
+  # next-build:
+  #   runs-on: ubuntu-latest
+  #   container: node:lts          # Use node LTS container version, same as Dockerfile base image
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3       # Checkout the code
+  #     - run: npm ci            #install dependencies
+  #     - name: Cache
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: |
+  #           ~/.npm
+  #           ${{ github.workspace }}/.next/cache
+  #         # Generate a new cache whenever packages or source files change.
+  #         key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+  #         # If source files changed but packages didn't, rebuild from a prior cache.
+  #         restore-keys: |
+  #           ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+  #     - run: npm run build
           
-  build_and_push: #in making'
-    needs: next-build
+  build_docker: #in making'
+    name: Docker build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the repo 
+      - name: Check out the repo
         uses: actions/checkout@v3
-      - name: Build image 
-        run: docker build -t foodful .
+      
+      - name: Build Docker image
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
