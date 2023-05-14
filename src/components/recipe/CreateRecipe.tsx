@@ -35,7 +35,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
     const [recipeId, setRecipeId] = useState<number | null>(currentRecipe?.id ?? null);
     const [custom, setCustom] = useState(false);
     const [errors, setErrors] = useState<string[] | []>([]);
-    const [currentImage, setCurrentImage] = useState<string | null>(currentRecipe?.imageUrl ?? null);
+    const [currentImage, setCurrentImage] = useState<string | null>(currentRecipe?.imageFullName ?? null);
     const [selectedFile, setSelectedFile] = useState(null);
     const [title, setTitle] = useState<"Add new Recipe" | string>(currentRecipe?.name ?? "Add new Recipe");
     const router = useRouter();
@@ -78,7 +78,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
 
     const handleUpload = async (uploadRecipeId: number) =>
     {
-        const imageRef = ref(storage, `images/${selectedFile?.name + v4()}`);
+        const imageRef = ref(storage, `images/${selectedFile?.name as string}${v4()}`);
 
         await uploadBytes(imageRef, selectedFile).then((resFile) =>
         {
@@ -172,7 +172,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
 
                         void router.replace(router.asPath, undefined, { scroll: false });
                     }
-                    onClose();
+                    void onClose();
                     toast({
                         title: "Recipe created",
                         description: "Recipe was created successfully",

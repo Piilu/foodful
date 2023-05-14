@@ -14,6 +14,7 @@ const RecipeImage: FunctionComponent<RecipeImageProps> = (props) =>
     const { imageName, isListItem, recipeName } = props;
     const [image, setImage] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(true);
+    console.log(imageName)
 
     useEffect(() =>
     {

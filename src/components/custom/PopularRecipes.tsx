@@ -20,7 +20,7 @@ const PopularRecipes = () =>
         <>
             {loading ? <Loader mb={10} size={50} variant="dots" color='green' /> : null}
             {recipes?.length !== 0 ? recipes.map((recipe) => (
-                <Recipe key={recipe.id} recipe={recipe} userId={recipe.userId} />
+                <Recipe key={recipe?.id} recipe={recipe} userId={recipe?.userId as string} />
             )) : <Text variant='dimmed'>Can't find any recipes</Text>}
         </>
     )

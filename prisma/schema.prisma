@@ -68,9 +68,9 @@ model Recipe {
     userId       String
     user         User          @relation(fields: [userId], references: [id])
     totalTime    Int?
-    imageUrl     String?
+    deleted      Boolean       @default(false)
+    imageFullName     String? @map("imageUrl")
     imageName    String?
-    imageId      String?
     createdAt    DateTime      @default(now())
     updatedAt    DateTime      @updatedAt
     ingredients  ingredients[]

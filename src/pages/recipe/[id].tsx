@@ -29,16 +29,15 @@ type RecipeType = {
 export const RecipePage: NextPage<RecipeType> = (props) =>
 {
   const { recipe, isRecipeOwner } = props;
-  const router = useRouter();
   const { data: session } = useSession();
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <Card mb={10} >
       {isOpen ?
-        <CreateRecipe onClose={onClose} isOpen={isOpen} recipeId={recipe.id} currentRecipe={recipe} isModal />
+        <CreateRecipe onClose={onClose} isOpen={isOpen} currentRecipe={recipe} isModal />
         : null}
       <AspectRatio h={"20em"} ratio={16 / 9}>
-        <RecipeImage recipeName={recipe.name ?? ""} imageName={recipe.imageUrl as string} />
+        <RecipeImage recipeName={recipe.name ?? ""} imageName={recipe.imageFullName ?? ""} />
       </AspectRatio>
 
 
@@ -92,7 +91,7 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
               </Flex>
             </Heading>
             <Text pt='2' fontSize='sm'>
-              {prettyMilliseconds(recipe.totalTime * 60000)}
+              {prettyMilliseconds(recipe.totalTime ?? 0 * 60000)}
             </Text>
           </Box>
           <Box>

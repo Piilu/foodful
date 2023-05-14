@@ -1,7 +1,7 @@
 import { Badge, IconButton } from '@chakra-ui/react'
-import { ActionIcon, Group } from '@mantine/core';
+import { Group } from '@mantine/core';
 import { IconX } from '@tabler/icons-react';
-import React, { FunctionComponent } from 'react'
+import React, { type FunctionComponent } from 'react'
 
 type ImageBadgeType = {
     imageUrl: string;
