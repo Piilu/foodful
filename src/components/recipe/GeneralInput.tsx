@@ -67,8 +67,8 @@ const GeneralInput: FunctionComponent<GeneralInputProps> = (props) =>
                 <Input type='name' ref={nameRef} onChange={() => inputChanged()} />
             </FormControl>
             <FormControl isRequired>
-                <FormLabel>Total time (<small style={{ margin: 0 }} onChange={() => inputChanged()}>In minutes</small>)</FormLabel>
-                <Input type='number' ref={totalTimeRef} />
+                <FormLabel>Total time (<small style={{ margin: 0 }}>In minutes</small>)</FormLabel>
+                <Input type='number' ref={totalTimeRef} onChange={() => inputChanged()} />
             </FormControl>
             <FormControl>
                 <FormLabel>Description</FormLabel>

@@ -307,7 +307,7 @@ const CreateRecipe: FunctionComponent<CreateRecipeType> = (props) =>
                                                 {(props) => <Button {...props}>Upload image</Button>}
                                             </FileButton>
                                             {selectedFile == null ?
-                                                <AspectRatio ratio={16 / 9} w={{ base: '100%' }} >
+                                                <AspectRatio ratio={16 / 5} w={{ base: '100%' }} >
                                                     <RecipeImage recipeName={currentRecipe?.name ?? ""} imageName={currentImage ?? ""} />
                                                 </AspectRatio>
                                                 :

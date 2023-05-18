@@ -10,6 +10,7 @@ import React, { use } from 'react'
 import Moment from 'react-moment';
 import UserAvatar from '~/components/profile/UserAvatar';
 import CreateRecipe from '~/components/recipe/CreateRecipe';
+import FavoriteButton from '~/components/recipe/FavoriteButton';
 import RecipeImage from '~/components/recipe/RecipeImage';
 import { requireAuth } from '~/utils/helpers';
 export async function getServerSideProps(ctx: GetServerSidePropsContext)
@@ -36,7 +37,7 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
       {isOpen ?
         <CreateRecipe onClose={onClose} isOpen={isOpen} currentRecipe={recipe} isModal />
         : null}
-      <AspectRatio h={"20em"} ratio={16 / 9}>
+      <AspectRatio ratio={16 / 5}>
         <RecipeImage recipeName={recipe.name ?? ""} imageName={recipe.imageFullName ?? ""} />
       </AspectRatio>
 
@@ -44,13 +45,9 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
       <CardBody>
         <CardHeader p={0} mb={5} >
           <Group position='apart'>
-            <Heading size='lg'>{recipe.name}</Heading>
+            <Heading size='lg' wordBreak={"break-word"}>{recipe.name}</Heading>
             <Group>
-              <Tooltip openDelay={500} label='Favorite (Yum)'>
-                <ActionIcon color={recipe.Favorites.some((favorite) => favorite.userId == session?.user.id) ? "orange" : "gray"}>
-                  <IconLicense />
-                </ActionIcon>
-              </Tooltip>
+              <FavoriteButton isIcon={true} recipeId={recipe?.id ?? -1} count={recipe?.Favorites.length ?? 0} isFavorite={recipe?.Favorites.some(favorite => (favorite.userId == session?.user.id ? true : false)) ?? false} />
               {isRecipeOwner ?
                 <Flex align={"center"}>
                   <Tooltip openDelay={500} label="Edit">
@@ -91,7 +88,7 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
               </Flex>
             </Heading>
             <Text pt='2' fontSize='sm'>
-              {prettyMilliseconds(recipe.totalTime ?? 0 * 60000)}
+              {prettyMilliseconds(recipe.totalTime * 60000)}
             </Text>
           </Box>
           <Box>

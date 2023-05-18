@@ -38,7 +38,7 @@ const profile: NextPage<ProfileType> = (props) =>
   if (notFound)
   {
     return (
-      <Box mx={"auto"}>
+      <Box w={"100%"} mx={"auto"}>
         <Heading as={"h4"} size="lg" mb={5}>User not found</Heading>
       </Box>
     );
