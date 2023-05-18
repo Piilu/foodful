@@ -65,7 +65,7 @@ function RecipeList(props: RecipeListType)
     {
         if (showFavorites)
         {
-            void router.push({ query: { ...router.query, favorite: checkRef.current.checked } }, undefined, { shallow: true, });
+            void router.replace({ query: { ...router.query, favorite: checkRef.current.checked } }, undefined, { shallow: true, });
         }
         void getRecipes();
     }, [activePage, favorite]);
@@ -140,8 +140,7 @@ function RecipeList(props: RecipeListType)
             {items?.length !== 0 ? items.map((item) =>
             {
                 return (
-                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                    <Recipe openRecipeModal={openRecipeModal} key={item.id} horizontal recipe={item as FullRecipeData} userId={item.userId} />
+                    <Recipe openRecipeModal={void openRecipeModal} key={item.id} horizontal recipe={item as FullRecipeData} userId={item.userId} />
                 )
             }) : <SearchNotFound value="Can't find any recipes" />}
             <Pagination style={{ float: "right" }} value={activePage} onChange={handlePageChange} total={pages} />
