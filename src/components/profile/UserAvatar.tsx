@@ -45,7 +45,7 @@ const UserAvatar: FunctionComponent<UserAvatarProps> = (props) =>
                 <PopoverContent w={"100%"}>
                     <PopoverArrow />
                     <PopoverCloseButton />
-                    {isPopoverOpen ? <UserCard user={user as PrismaUser} isProfileUser={session?.user.id == user.id} /> : null}
+                    {isPopoverOpen ? <UserCard isPopover user={user as PrismaUser} isProfileUser={session?.user.id == user.id} /> : null}
                 </PopoverContent>
             </Portal>
         </Popover>
