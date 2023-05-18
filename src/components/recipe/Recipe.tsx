@@ -51,7 +51,7 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                                 <Tooltip openDelay={500} label="Total Time" placement="top">
                                     <Flex gap={1}>
                                         <IconClock size={18} color='green' />
-                                        <Text fontSize={12} as={"b"}>{prettyMilliseconds(recipe?.totalTime ?? 0 * 60000)}</Text>
+                                        <Text fontSize={12} as={"b"}>{prettyMilliseconds(recipe?.totalTime * 60000)} test</Text>
                                     </Flex>
                                 </Tooltip>
                                 <Tooltip openDelay={500} label="Total Ingridients" placement='top'>
@@ -173,7 +173,7 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
 
                                     <Flex gap={1}>
                                         <IconClock size={18} color='green' />
-                                        <Text fontSize={12} as={"b"}>{prettyMilliseconds(recipe?.totalTime ?? 0 * 60000)}</Text>
+                                        <Text fontSize={12} as={"b"}>{prettyMilliseconds(recipe?.totalTime * 60000)}</Text>
                                     </Flex>
                                 </Tooltip>
                                 <Tooltip openDelay={500} label="Total Ingridients" placement='top'>
