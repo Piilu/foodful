@@ -31,6 +31,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
           <Container size={"xl"}  >
             <Head>
               <title>Foodful</title>
+              <link rel="shortcut icon" href="/fooful_favicon.png"></link>
             </Head>
             <Component {...pageProps} />
           </Container>
