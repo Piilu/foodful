@@ -17,7 +17,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
     <SessionProvider session={session}>
       <ChakraProvider>
         <NavBar />
-        <Head><link rel="shortcut icon" href="/home/lennu/foodful/public/fooful_favicon.png"></link></Head>
+        <Head><link rel="shortcut icon" href="/fooful_favicon.png"></link></Head>
         <Container>
           <Component {...pageProps} />
         </Container>
