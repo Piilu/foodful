@@ -15,7 +15,7 @@ const NavLink: FunctionComponent<NavLinkType> = (props) =>
     const { item } = props;
     const router = useRouter();
     const activeColor = useColorModeValue('gray.200', 'gray.700');
-    const link = item.isProfile ? `/${session?.user.name as string}` : item.link;
+    const link = item.isProfile ? `${session?.user.name as string}` : item.link;
 
     return (
         <StyeLink
@@ -27,7 +27,7 @@ const NavLink: FunctionComponent<NavLinkType> = (props) =>
                 textDecoration: 'none',
                 bg: activeColor,
             }}
-            bg={router.asPath.toLocaleLowerCase() === link.toLocaleLowerCase() ? activeColor : null}
+            bg={router.query?.name?.toLocaleLowerCase() === link.toLocaleLowerCase() ? activeColor : null}
             href={link}>
             {item.label}
         </StyeLink>

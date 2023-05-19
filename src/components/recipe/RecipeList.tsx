@@ -51,7 +51,6 @@ function RecipeList(props: RecipeListType)
         })
     }
 
-
     const openRecipeModal = async (id: number | undefined) =>
     {
         if (id !== undefined)
@@ -63,10 +62,6 @@ function RecipeList(props: RecipeListType)
     }
     useEffect(() =>
     {
-        if (showFavorites)
-        {
-            void router.replace({ query: { ...router.query, favorite: checkRef.current.checked } }, undefined, { shallow: true, });
-        }
         void getRecipes();
     }, [activePage, favorite]);
 
@@ -76,8 +71,7 @@ function RecipeList(props: RecipeListType)
         {
             void getRecipes();
         }
-        void getRecipes();
-    }, [router, value]);
+    }, [value]);
 
 
     const getRecipes = async () =>
@@ -140,7 +134,7 @@ function RecipeList(props: RecipeListType)
             {items?.length !== 0 ? items.map((item) =>
             {
                 return (
-                    <Recipe openRecipeModal={void openRecipeModal} key={item.id} horizontal recipe={item as FullRecipeData} userId={item.userId} />
+                    <Recipe openRecipeModal={openRecipeModal} key={item.id} horizontal recipe={item as FullRecipeData} userId={item.userId} />
                 )
             }) : <SearchNotFound value="Can't find any recipes" />}
             <Pagination style={{ float: "right" }} value={activePage} onChange={handlePageChange} total={pages} />

@@ -59,7 +59,7 @@ const EditProfile: FunctionComponent<EditProfilType> = (props) =>
 
             if (newData.success)
             {
-                void router.replace(router.asPath, undefined, { scroll: false });
+                router.replace(router.pathname.replace("[name]", newData.user.name), undefined, { scroll: false });
 
                 if (close) onClose?.();
 

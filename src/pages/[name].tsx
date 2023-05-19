@@ -16,6 +16,7 @@ import UserCard from "~/components/profile/UserCard";
 import { MediaQuery } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import CreateRecipe from "~/components/recipe/CreateRecipe";
+import Head from "next/head";
 
 export async function getServerSideProps(ctx: GetServerSidePropsContext)
 {
@@ -45,6 +46,9 @@ const profile: NextPage<ProfileType> = (props) =>
   }
   return (
     <>
+      <Head>
+        <title>Foodful | {profileUser.name} </title>
+      </Head>
       {isOpen ?
         <CreateRecipe recipeId={null} isModal isOpen={isOpen} onClose={onClose} currentRecipe={null} />
         : null}

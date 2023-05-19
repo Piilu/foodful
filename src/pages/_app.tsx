@@ -27,8 +27,11 @@ const MyApp: AppType<{ session: Session | null }> = ({
       <ChakraProvider theme={theme} >
         <ModalsProvider>
           <NavBar />
-          <Head><link rel="shortcut icon" href="/fooful_favicon.png"></link></Head>
-        <Container size={"xl"}  >
+          <Container size={"xl"}  >
+            <Head>
+              <title>Foodful</title>
+              <link rel="shortcut icon" href="/fooful_favicon.png"></link>
+            </Head>
             <Component {...pageProps} />
           </Container>
         </ModalsProvider>
