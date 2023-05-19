@@ -62,10 +62,6 @@ function RecipeList(props: RecipeListType)
     }
     useEffect(() =>
     {
-        if (showFavorites)
-        {
-            void router.replace({query: { ...router.query, favorite: checkRef.current.checked } }, undefined, { shallow: true, });
-        }
         void getRecipes();
     }, [activePage, favorite]);
 
