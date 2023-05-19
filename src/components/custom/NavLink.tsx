@@ -1,8 +1,10 @@
-import { Link, useColorModeValue } from '@chakra-ui/react'
+import { Link as StyeLink, useColorModeValue } from '@chakra-ui/react'
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import React, { FunctionComponent, ReactNode } from 'react'
-import { LinkType } from '~/constants/types';
+import React, { type FunctionComponent } from 'react'
+import { type LinkType } from '~/constants/types';
+import Link from 'next/link';
+
 
 type NavLinkType = {
     item: LinkType;
@@ -16,7 +18,8 @@ const NavLink: FunctionComponent<NavLinkType> = (props) =>
     const link = item.isProfile ? `/${session?.user.name as string}` : item.link;
 
     return (
-        <Link
+        <StyeLink
+            as={Link}
             px={2}
             py={1}
             rounded={'md'}
@@ -27,7 +30,7 @@ const NavLink: FunctionComponent<NavLinkType> = (props) =>
             bg={router.asPath.toLocaleLowerCase() === link.toLocaleLowerCase() ? activeColor : null}
             href={link}>
             {item.label}
-        </Link>
+        </StyeLink>
     )
 }
 

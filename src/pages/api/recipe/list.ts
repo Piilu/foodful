@@ -1,14 +1,16 @@
-import { getSession } from "next-auth/react";
-import { NextApiRequest, NextApiResponse } from "next/types";
+import { type NextApiRequest, type NextApiResponse } from "next/types";
 import { prisma } from "~/server/db";
-import { Favorites, Recipe, User, ingredients } from "@prisma/client";
-import { serialize } from "v8";
+import { type Favorites, type Recipe, type User, type ingredients } from "@prisma/client";
+import { type FullRecipeData } from "~/constants/types";
+import { getServerAuthSession } from "~/server/auth";
 
 export type RecipeReqListType = {
     userId?: string,
     page: number,
     take?: number,
     searchName?: string,
+    favorite?: boolean,
+    orderCreatedAt?: "asc" | "desc",
 }
 
 export type RecipeResListGetType = {
@@ -18,47 +20,100 @@ export type RecipeResListGetType = {
         ingredients: ingredients[];
         Favorites: Favorites[];
     }) | null,
-    recipes: Recipe[],
+    recipes: FullRecipeData[],
     totalRecipes: number,
     error?: string
 }
 export default async function handler(req: NextApiRequest, res: NextApiResponse)
 {
     const response = {} as RecipeResListGetType;
-    const session = await getSession({ req })
-    const { page, take, searchName, userId } = req.body as RecipeReqListType;
+    const session = await getServerAuthSession({ req, res })
+    const { page, take, searchName, userId, favorite, orderCreatedAt } = req.body as RecipeReqListType;
     const method = req.method;
 
     try
     {
         if (method === "POST")
         {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const recipes = await prisma.recipe.findMany({
-                skip: page * take,
-                take: take,
-                orderBy: { createdAt: "asc" },
-                where: {
-                    name: { contains: searchName },
-                    ...(userId != undefined ? { userId: userId } : {}),
-                },
-            });
 
-            const totalRecipes = await prisma.recipe.count({
-                where: {
-                    name: {
-                        contains: searchName,
+            if (favorite)
+            {
+                const recipes = await prisma.favorites.findMany({
+                    select: {
+                        recipe: {
+                            include: {
+                                ingredients: true,
+                                instructions: true,
+                                Favorites: true,
+                                user: true,
+                            }
+                        },
                     },
-                    ...(userId != undefined ? { userId: userId } : {}),
-                },
-            });
+                    skip: page * take,
+                    take: take,
+                    orderBy: { recipe: { createdAt: orderCreatedAt } },
+                    where: {
+                        userId: userId,
+                        recipe: {
+                            name: { contains: searchName },
+                        }
+                    },
 
-            response.success = true;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            response.recipes = recipes;
-            response.totalRecipes = totalRecipes;
-            res.status(200).json(response);
-            return;
+                });
+
+                const totalRecipes = await prisma.favorites.count({
+                    where: {
+                        userId: userId,
+                        recipe: {
+                            name: { contains: searchName },
+                        }
+                    },
+                });
+                response.success = true;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                response.recipes = recipes.map((favorite) => favorite.recipe);
+                response.totalRecipes = totalRecipes;
+                res.status(200).json(response);
+                return;
+            }
+            else
+            {
+
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                const recipes = await prisma.recipe.findMany({
+                    skip: page * take,
+                    take: take,
+                    orderBy: { createdAt: orderCreatedAt },
+                    where: {
+                        deleted: false,
+                        name: { contains: searchName },
+                        ...(userId != undefined ? { userId: userId } : {}),
+                    },
+                    include: {
+                        ingredients: true,
+                        instructions: true,
+                        Favorites: true,
+                        user: true,
+                    }
+                });
+
+                const totalRecipes = await prisma.recipe.count({
+                    where: {
+                        name: {
+                            contains: searchName,
+                        },
+                        deleted: false,
+                        ...(userId != undefined ? { userId: userId } : {}),
+                    },
+                });
+
+                response.success = true;
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                response.recipes = recipes;
+                response.totalRecipes = totalRecipes;
+                res.status(200).json(response);
+                return;
+            }
         }
         response.success = false;
         response.error = "Not allowed";

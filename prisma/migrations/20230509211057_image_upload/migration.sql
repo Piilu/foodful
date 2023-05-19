@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE `Recipe` ADD COLUMN `imageId` VARCHAR(191) NULL,
+    ADD COLUMN `imageName` VARCHAR(191) NULL,
+    ADD COLUMN `imageUrl` VARCHAR(191) NULL;

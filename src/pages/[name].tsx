@@ -1,30 +1,21 @@
-import { useRouter } from "next/router";
 import React from "react";
 import
 {
-  Card,
-  CardBody,
-  CardFooter,
-  Container,
-  Stack,
   Heading,
-  Text,
-  ButtonGroup,
   Button,
-  UnorderedList,
-  Grid,
-  GridItem,
   Flex,
-  Avatar,
   Box,
-  Center
+  useDisclosure,
 } from "@chakra-ui/react";
-import Recipe from "~/components/auth/Recipe";
 import RecipeList from "~/components/recipe/RecipeList";
 import { requireAuth } from "~/utils/helpers";
-import { GetServerSidePropsContext, NextPage } from "next/types";
+import { type GetServerSidePropsContext, type NextPage } from "next/types";
 import { useSession } from "next-auth/react";
-import { User } from "@prisma/client";
+import { type User } from "@prisma/client";
+import UserCard from "~/components/profile/UserCard";
+import { MediaQuery } from "@mantine/core";
+import { IconPlus } from "@tabler/icons-react";
+import CreateRecipe from "~/components/recipe/CreateRecipe";
 
 export async function getServerSideProps(ctx: GetServerSidePropsContext)
 {
@@ -34,131 +25,58 @@ export async function getServerSideProps(ctx: GetServerSidePropsContext)
 type ProfileType = {
   isProfileUser: boolean;
   profileUser: User;
+  notFound?: boolean;
 };
 
 const profile: NextPage<ProfileType> = (props) =>
 {
-  const { isProfileUser, profileUser } = props;
+  const { isProfileUser, profileUser, notFound } = props;
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { data: session } = useSession();
-  // const data = ["munad", "piim", "leib", "vorst", "juust"];
-  return ( 
-<Flex
-  direction={{
-    base: "column",
-    md: "row",
-  }}
-  align="flex-start"
-  justify="center"
-  wrap="wrap"
-  gap={4}
->
-  <Box flex="9">
-    <Heading>
-      <Center>{profileUser.name}&rsquo;s recipes</Center>
-    </Heading>
-    {/* <UnorderedList>
-      {data.map((item, index) => {
-        return <ListItem key={index}>{item}</ListItem>;
-      })}
-    </UnorderedList> */}
-    <UnorderedList mt="6">
-      <Recipe
-        name="Test"
-        horizontal
-        guidelines="Testing guidlines"
-        info="Info jeje"
-      />
-      <Recipe
-        name="Test"
-        horizontal
-        guidelines="Testing guidlines"
-        info="Info jeje"
-      />
-      <Recipe
-        name="Test"
-        horizontal
-        guidelines="Testing guidlines"
-        info="Info jeje"
-      />
-      <Recipe
-        name="Test"
-        horizontal
-        guidelines="Testing guidlines"
-        info="Info jeje"
-      />
-      <Recipe
-        name="Test"
-        horizontal
-        guidelines="Testing guidlines"
-        info="Info jeje"
-      />
-      <Recipe
-        name="Test"
-        horizontal
-        guidelines="Testing guidlines"
-        info="Info jeje"
-      />
-      <Recipe
-        name="Test"
-        horizontal
-        guidelines="Testing guidlines"
-        info="Info jeje"
-      />
-      <Recipe
-        name="Test"
-        horizontal
-        guidelines="Testing guidlines"
-        info="Info jeje"
-      />
-      <Recipe
-        name="Test"
-        horizontal
-        guidelines="Testing guidlines"
-        info="Info jeje"
-      />
-    </UnorderedList>
-  </Box>
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  if (notFound)
+  {
+    return (
+      <Box w={"100%"} mx={"auto"}>
+        <Heading as={"h4"} size="lg" mb={5}>User not found</Heading>
+      </Box>
+    );
+  }
+  return (
+    <>
+      {isOpen ?
+        <CreateRecipe recipeId={null} isModal isOpen={isOpen} onClose={onClose} currentRecipe={null} />
+        : null}
+      <MediaQuery largerThan={"md"} styles={{ display: "none" }}>
+        <Box mb={5}>
+          <UserCard isProfileUser={isProfileUser} grow user={profileUser} />
+          <Button mt={2} w={"100%"} colorScheme="green" onClick={onOpen} leftIcon={<IconPlus />}>Add new recipe</Button>
+        </Box>
+      </MediaQuery>
+      <Flex
+        align="flex-start"
+        justify="center"
+        wrap="nowrap"
+        gap={4}
+      >
 
-  <Box flex="3" mt={{ base: 4, md: 0 }} position="sticky" top="1rem">
-    <Card>
-      <CardBody>
-        <Stack mt="6" spacing="3">
-          <Heading>
-            <Flex spacing="4">
-              <Flex flex="1" gap="3" alignItems="center" flexWrap="wrap">
-                <Avatar
-                  name={profileUser.name}
-                  src="https://www.recipefy.com/media/W1siZiIsIjIwMTQvMTEvMjUvMTVfMzhfNTFfODQzX21pbmEwMDA3X2pwZy5qcGciXSxbInAiLCJhdXRvX29yaWVudCJdLFsicCIsInRodW1iIiwiMTYweDE2MCMiXSxbImUiLCJqcGciXV0/mina0007-jpg.jpg"
-                />
-                <Box>
-                  <Heading size="sm">{profileUser.name}</Heading>
-                </Box>
-              </Flex>
-            </Flex>
-          </Heading>
-          <Text>
-            Siin on kokkuvõte minu elust, et kõik saaksid lugeda ja
-            imestada.
-          </Text>
-        </Stack>
-      </CardBody>
-      <Center>
-        <CardFooter>
-          <ButtonGroup spacing="2">
-            <Stack>
-              <Button size="lg" colorScheme="green">
-                Retseptid
-              </Button>
-              <Button size="lg" colorScheme="green">
-                Lemmikud
-              </Button>
-            </Stack>
-          </ButtonGroup>
-        </CardFooter>
-      </Center>
-    </Card>
-  </Box>
-</Flex>    
+        <Box style={{ width: "100%" }} mx={"auto"}>
+          <Heading as={"h4"} size="lg" mb={5}>{profileUser.name}'s recipes</Heading>
+          <RecipeList showFavorites showUpperPagination search limit={10} page={1} userId={profileUser.id} />
+        </Box>
+
+        <MediaQuery smallerThan={"md"} styles={{ display: "none" }}>
+          <Box position="sticky" top="1rem">
+            <UserCard isProfileUser={isProfileUser} user={profileUser} />
+            {isProfileUser ?
+              <Button mt={2} w={"100%"} colorScheme="green" onClick={onOpen} leftIcon={<IconPlus />}>Add new recipe</Button>
+              : null}
+          </Box>
+        </MediaQuery>
+      </Flex >
+
+    </>
   );
 };
 
