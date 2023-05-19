@@ -8,6 +8,7 @@ import NavBar from "~/components/custom/NavBar";
 import { Container, Modal } from "@mantine/core";
 import { ModalsProvider } from '@mantine/modals';
 import { extendTheme } from "@chakra-ui/react"
+import Head from "next/head";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -26,7 +27,8 @@ const MyApp: AppType<{ session: Session | null }> = ({
       <ChakraProvider theme={theme} >
         <ModalsProvider>
           <NavBar />
-          <Container size={"xl"}  >
+          <Head><link rel="shortcut icon" href="/fooful_favicon.png"></link></Head>
+        <Container size={"xl"}  >
             <Component {...pageProps} />
           </Container>
         </ModalsProvider>
