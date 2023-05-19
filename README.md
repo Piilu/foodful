@@ -1,9 +1,8 @@
 # Foodful appplication for web.
 
 ```
-1. npx prisma db push
-2. npm install
-3. npm run dev
+1. npm install
+2. npm run dev
 ```
 # Making changes, creating PR!
 
