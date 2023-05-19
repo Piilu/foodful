@@ -6,6 +6,7 @@ import { ChakraProvider } from '@chakra-ui/react'
 import "~/styles/globals.css";
 import NavBar from "~/components/custom/NavBar";
 import { Container } from "@mantine/core";
+import Head from "next/head";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -16,6 +17,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
     <SessionProvider session={session}>
       <ChakraProvider>
         <NavBar />
+        <Head><link rel="shortcut icon" href="/home/lennu/foodful/public/fooful_favicon.png"></link></Head>
         <Container>
           <Component {...pageProps} />
         </Container>
