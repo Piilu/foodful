@@ -70,7 +70,7 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                                             </MenuButton>
                                             <Portal>
                                                 <MenuList>
-                                                    <MenuItem onClick={() => void openRecipeModal?.(recipe?.id)}>Edit</MenuItem>
+                                                    <MenuItem onClick={() => openRecipeModal?.(recipe?.id)}>Edit</MenuItem>
                                                     <DeleteButton recipeId={recipe?.id ?? -1} />
                                                 </MenuList>
                                             </Portal>
@@ -106,7 +106,7 @@ const Recipe: FunctionComponent<RecipeProps> = (props) =>
                                             </MenuButton>
                                             <Portal>
                                                 <MenuList>
-                                                    <MenuItem onClick={() => void openRecipeModal?.(recipe?.id)}>Edit</MenuItem>
+                                                    <MenuItem onClick={() => openRecipeModal?.(recipe?.id)}>Edit</MenuItem>
                                                     <DeleteButton recipeId={recipe?.id ?? -1} />
                                                 </MenuList>
                                             </Portal>

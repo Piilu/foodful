@@ -4,6 +4,7 @@ import { Favorites, Instruction, Recipe, User, ingredients } from '@prisma/clien
 import { IconClock, IconBook, IconBook2, IconLicense, IconEdit } from '@tabler/icons-react';
 import { GetServerSidePropsContext, NextPage } from 'next';
 import { useSession } from 'next-auth/react';
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import prettyMilliseconds from 'pretty-ms';
 import React, { use } from 'react'
@@ -34,6 +35,9 @@ export const RecipePage: NextPage<RecipeType> = (props) =>
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <Card mb={10} >
+      <Head>
+        <title>Foodful | {recipe.name} </title>
+      </Head>
       {isOpen ?
         <CreateRecipe onClose={onClose} isOpen={isOpen} currentRecipe={recipe} isModal />
         : null}

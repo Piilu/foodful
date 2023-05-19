@@ -5,6 +5,7 @@ import { requireAuth } from "~/utils/helpers";
 import { Group } from "@mantine/core"
 import RecipeList from "~/components/recipe/RecipeList";
 import PopularRecipes from "~/components/custom/PopularRecipes";
+import Head from "next/head";
 
 export async function getServerSideProps(ctx: GetServerSidePropsContext)
 {
@@ -16,6 +17,9 @@ const Home: NextPage = () =>
   const { data: session } = useSession();
   return (
     <>
+    <Head>
+        <title>Foodful</title>
+    </Head>
       {/* See saab eraldi komponent olla */}
       <Text align="center" pb={5} fontSize="4xl" > Todays hot recipes 🔥 </Text>
       <Group style={{ justifyContent: "center" }}>
