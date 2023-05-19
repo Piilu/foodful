@@ -9,7 +9,6 @@ import { Container, Modal } from "@mantine/core";
 import { ModalsProvider } from '@mantine/modals';
 import { extendTheme } from "@chakra-ui/react"
 import Head from "next/head";
-import Head from "next/head";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
